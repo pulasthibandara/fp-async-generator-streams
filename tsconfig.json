@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "commonjs",
+    "declaration": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "skipLibCheck": false,
+    "types": [
+      "mocha"
+    ],
+    "outDir": "dist",
+  },
+  "include": ["src/**/*"]
+}
