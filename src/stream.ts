@@ -533,9 +533,17 @@ export const broadcast = <A>(as: Stream<A>): [Stream<A>, Stream<A>] => {
 
   let bufferA: Array<A> = []
   let bufferB: Array<A> = []
+  let aConsumed = false
+  let bConsumed = false
 
   return [
     async function* () {
+      if (aConsumed) {
+        throw new Error('Broadcasted stream already consumed')
+      }
+
+      aConsumed = true
+
       while (true) {
         const { value, done } = await iterator.next()
 
@@ -550,6 +558,12 @@ export const broadcast = <A>(as: Stream<A>): [Stream<A>, Stream<A>] => {
       }
     },
     async function* () {
+      if (bConsumed) {
+        throw new Error('Broadcasted stream already consumed')
+      }
+
+      bConsumed = true
+
       while (true) {
         const { value, done } = await iterator.next()
 
