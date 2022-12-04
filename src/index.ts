@@ -1,1 +1,5 @@
-export * as stream from './stream'
+/**
+ * @since 0.1.0
+ */
+
+export * as stream from './Stream'

@@ -1,0 +1,5 @@
+{
+  "enforceDescriptions": false,
+  "enforceVersion": false,
+  "exclude": ["**/*test.ts", "test/**/*"]
+}
