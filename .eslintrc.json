@@ -2,12 +2,13 @@
   "parserOptions": {
     "project": "./tsconfig.json"
   },
-  "plugins": ["deprecation", "fp-ts"],
+  "plugins": ["deprecation", "fp-ts", "prettier"],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:fp-ts/all"
+    "plugin:fp-ts/all",
+    "plugin:prettier/recommended"
   ],
   "rules": {
     "@typescript-eslint/no-floating-promises": "error",

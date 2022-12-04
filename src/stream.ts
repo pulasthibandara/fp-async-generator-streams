@@ -2,7 +2,37 @@
  * @since 0.1.0
  */
 
-import { alt as catAlt, alternative, applicative, apply, array, chain as chain_, compactable, either, eq, filterable, filterableWithIndex, fromEither as fromEither_, fromTask as fromTask_, functor, functorWithIndex, io, monad, monoid, option, pointed, predicate, refinement, semigroup, separated, task, taskOption, tuple, unfoldable, zero as catZero } from 'fp-ts'
+import {
+  alt as catAlt,
+  alternative,
+  applicative,
+  apply,
+  array,
+  chain as chain_,
+  compactable,
+  either,
+  eq,
+  filterable,
+  filterableWithIndex,
+  fromEither as fromEither_,
+  fromTask as fromTask_,
+  functor,
+  functorWithIndex,
+  io,
+  monad,
+  monoid,
+  option,
+  pointed,
+  predicate,
+  refinement,
+  semigroup,
+  separated,
+  task,
+  taskOption,
+  tuple,
+  unfoldable,
+  zero as catZero
+} from 'fp-ts'
 import { flow, identity, Lazy, pipe, tupled, tuple as toTuple } from 'fp-ts/function'
 
 // -------------------------------------------------------------------------------------
@@ -45,7 +75,7 @@ declare module 'fp-ts/HKT' {
  * @category constructors
  * @since 0.1.0
  */
-export const of: pointed.Pointed1<URI>['of'] = a =>
+export const of: pointed.Pointed1<URI>['of'] = (a) =>
   async function* () {
     yield a
   }
@@ -83,7 +113,7 @@ export const execute =
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual([1, 2, 3], res))
  * )()
- * 
+ *
  * pipe(
  *  stream.fromArray([]),
  *  stream.toArray,
@@ -107,7 +137,7 @@ export const toArray = <T>(stream: Stream<T>) => execute<T, Array<T>>((agg, c) =
  *  stream.length,
  *  task.map(res => assert.deepStrictEqual(3, res))
  * )()
- * 
+ *
  * pipe(
  *  stream.fromArray([]),
  *  stream.length,
@@ -127,13 +157,13 @@ export const length = <T>(stream: Stream<T>) => execute<T, number>((agg) => agg 
  * import { pipe } from 'fp-ts/function'
  * import { task, option } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
- * 
+ *
  * pipe(
  *  stream.fromArray([1, 2, 3]),
  *  stream.lookup(1),
  *  task.map(res => assert.deepStrictEqual(option.some(2), res))
  * )()
- * 
+ *
  * pipe(
  *  stream.fromArray([1, 2, 3]),
  *  stream.lookup(3),
@@ -142,12 +172,14 @@ export const length = <T>(stream: Stream<T>) => execute<T, number>((agg) => agg 
  *
  * @since 0.1.0
  */
-export const lookup = (idx: number) => <A>(as: Stream<A>): task.Task<option.Option<A>> =>
-  pipe(
-    as,
-    filterWithIndex((i) => i === idx),
-    head,
-  )
+export const lookup =
+  (idx: number) =>
+    <A>(as: Stream<A>): task.Task<option.Option<A>> =>
+      pipe(
+        as,
+        filterWithIndex((i) => i === idx),
+        head
+      )
 
 /**
  * Get the last element in an stream, or `None` if the stream is empty
@@ -162,7 +194,7 @@ export const lookup = (idx: number) => <A>(as: Stream<A>): task.Task<option.Opti
  *  stream.last,
  *  task.map(res => assert.deepStrictEqual(option.some(3), res))
  * )()
- * 
+ *
  * pipe(
  *  stream.fromArray([]),
  *  stream.last,
@@ -174,7 +206,7 @@ export const lookup = (idx: number) => <A>(as: Stream<A>): task.Task<option.Opti
 export const last = <T>(stream: Stream<T>): task.Task<option.Option<T>> =>
   pipe(
     stream,
-    execute<T, option.Option<T>>((_, c) => option.some(c), option.none),
+    execute<T, option.Option<T>>((_, c) => option.some(c), option.none)
   )
 
 /**
@@ -184,13 +216,13 @@ export const last = <T>(stream: Stream<T>): task.Task<option.Option<T>> =>
  * import { pipe } from 'fp-ts/function'
  * import { task, option } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
- * 
+ *
  * pipe(
  *  stream.fromArray([1, 2, 3]),
  *  stream.head,
  *  task.map(res => assert.deepStrictEqual(option.some(1), res))
  * )()
- * 
+ *
  * pipe(
  *  stream.fromArray([]),
  *  stream.head,
@@ -199,8 +231,7 @@ export const last = <T>(stream: Stream<T>): task.Task<option.Option<T>> =>
  *
  * @since 0.1.0
  */
-export const head = <T>(stream: Stream<T>): task.Task<option.Option<T>> =>
-  pipe(stream, take(1), last)
+export const head = <T>(stream: Stream<T>): task.Task<option.Option<T>> => pipe(stream, take(1), last)
 
 /**
  * Find the first index for which a predicate holds and return tuple of element and index
@@ -215,22 +246,22 @@ export const head = <T>(stream: Stream<T>): task.Task<option.Option<T>> =>
  *  stream.findFirstMapWithIndex((i, a) => a === 2 ? option.some(`${i}-${a}`) : option.none),
  *  task.map(res => assert.deepStrictEqual(option.some("1-2"), res))
  * )()
- * 
+ *
  * pipe(
  *  stream.fromArray([]),
  *  stream.findFirstMapWithIndex((i, a) => a === 2 ? option.some(`${i}-${a}`) : option.none),
  *  task.map(res => assert.deepStrictEqual(option.none, res))
  * )()
- * 
+ *
  * @since 0.1.0
  */
-export const findFirstMapWithIndex =
-  <A, B>(f: (i: number, a: A) => option.Option<B>): (as: Stream<A>) => task.Task<option.Option<B>> =>
-    flow(
-      filterMapWithIndex((i, a) => f(i, a)),
-      head,
-    )
-
+export const findFirstMapWithIndex = <A, B>(
+  f: (i: number, a: A) => option.Option<B>
+): ((as: Stream<A>) => task.Task<option.Option<B>>) =>
+  flow(
+    filterMapWithIndex((i, a) => f(i, a)),
+    head
+  )
 
 /**
  * Find the first index for which a predicate holds
@@ -245,18 +276,19 @@ export const findFirstMapWithIndex =
  *  stream.findIndex((a) => a === 2),
  *  task.map(res => assert.deepStrictEqual(option.some(1), res))
  * )()
- * 
+ *
  * pipe(
  *  stream.fromArray([]),
  *  stream.findIndex((a) => a === 2),
  *  task.map(res => assert.deepStrictEqual(option.none, res))
  * )()
- * 
+ *
  * @since 0.1.0
  */
-export const findIndex =
-  <A>(predicate: predicate.Predicate<A>): (as: Stream<A>) => task.Task<option.Option<number>> =>
-    findFirstMapWithIndex((i, a) => predicate(a) ? option.some(i) : option.none)
+export const findIndex = <A>(
+  predicate: predicate.Predicate<A>
+): ((as: Stream<A>) => task.Task<option.Option<number>>) =>
+  findFirstMapWithIndex((i, a) => (predicate(a) ? option.some(i) : option.none))
 
 /**
  * Find the first element which satisfies a predicate (or a refinement) function
@@ -270,9 +302,9 @@ export const findIndex =
  *   readonly a: number
  *   readonly b: number
  * }
- * 
+ *
  * const isA1 = (x: X) => x.a === 1
- * 
+ *
  * pipe(
  *  stream.fromArray([{ a: 1, b: 1 }, { a: 1, b: 2 }]),
  *  stream.findFirst(isA1),
@@ -281,11 +313,15 @@ export const findIndex =
  *
  * @since 0.1.0
  */
-export function findFirst<A, B extends A>(refinement: refinement.Refinement<A, B>): (as: Stream<A>) => taskOption.TaskOption<B>
-export function findFirst<A>(predicate: predicate.Predicate<A>): <B extends A>(bs: Stream<B>) => taskOption.TaskOption<B>
+export function findFirst<A, B extends A>(
+  refinement: refinement.Refinement<A, B>
+): (as: Stream<A>) => taskOption.TaskOption<B>
+export function findFirst<A>(
+  predicate: predicate.Predicate<A>
+): <B extends A>(bs: Stream<B>) => taskOption.TaskOption<B>
 export function findFirst<A>(predicate: predicate.Predicate<A>): (as: Stream<A>) => taskOption.TaskOption<A>
 export function findFirst<A>(predicate: predicate.Predicate<A>): (as: Stream<A>) => taskOption.TaskOption<A> {
-  return findFirstMapWithIndex((_, a) => predicate(a) ? option.some(a) : option.none)
+  return findFirstMapWithIndex((_, a) => (predicate(a) ? option.some(a) : option.none))
 }
 
 /**
@@ -302,7 +338,7 @@ export function findFirst<A>(predicate: predicate.Predicate<A>): (as: Stream<A>)
  * }
  *
  * const persons: stream.Stream<Person> = stream.fromArray([{ name: 'John' }, { name: 'Mary', age: 45 }, { name: 'Joey', age: 28 }])
- * 
+ *
  * pipe(
  *  persons,
  *  stream.findFirstMap(person => person.age ? option.some(person.age) : option.none),
@@ -311,9 +347,8 @@ export function findFirst<A>(predicate: predicate.Predicate<A>): (as: Stream<A>)
  *
  * @since 0.1.0
  */
-export const findFirstMap =
-  <A, B>(f: (a: A) => option.Option<B>): (as: Stream<A>) => taskOption.TaskOption<B> =>
-    findFirstMapWithIndex((_, a) => f(a))
+export const findFirstMap = <A, B>(f: (a: A) => option.Option<B>): ((as: Stream<A>) => taskOption.TaskOption<B>) =>
+  findFirstMapWithIndex((_, a) => f(a))
 
 /**
  * Find the last index for which a predicate holds and return tuple of element and index
@@ -328,21 +363,22 @@ export const findFirstMap =
  *  stream.findLastMapWithIndex((i, a) => a === 2 ? option.some(`${i}-${a}`) : option.none),
  *  task.map(res => assert.deepStrictEqual(option.some("3-2"), res))
  * )()
- * 
+ *
  * pipe(
  *  stream.fromArray([]),
  *  stream.findLastMapWithIndex((i, a) => a === 2 ? option.some(`${i}-${a}`) : option.none),
  *  task.map(res => assert.deepStrictEqual(option.none, res))
  * )()
- * 
+ *
  * @since 0.1.0
  */
-export const findLastMapWithIndex =
-  <A, B>(f: (i: number, a: A) => option.Option<B>): (as: Stream<A>) => task.Task<option.Option<B>> =>
-    flow(
-      filterMapWithIndex((i, a) => f(i, a)),
-      last,
-    )
+export const findLastMapWithIndex = <A, B>(
+  f: (i: number, a: A) => option.Option<B>
+): ((as: Stream<A>) => task.Task<option.Option<B>>) =>
+  flow(
+    filterMapWithIndex((i, a) => f(i, a)),
+    last
+  )
 
 /**
  * Find the last element which satisfies a predicate function
@@ -356,7 +392,7 @@ export const findLastMapWithIndex =
  *   readonly a: number
  *   readonly b: number
  * }
- * 
+ *
  * pipe(
  *  stream.fromArray([{ a: 1, b: 1 }, { a: 1, b: 2 }]),
  *  stream.findLast((x) => x.a === 1),
@@ -365,7 +401,9 @@ export const findLastMapWithIndex =
  *
  * @since 0.1.0
  */
-export function findLast<A, B extends A>(refinement: refinement.Refinement<A, B>): (as: Stream<A>) => taskOption.TaskOption<B>
+export function findLast<A, B extends A>(
+  refinement: refinement.Refinement<A, B>
+): (as: Stream<A>) => taskOption.TaskOption<B>
 export function findLast<A>(predicate: predicate.Predicate<A>): <B extends A>(bs: Stream<B>) => taskOption.TaskOption<B>
 export function findLast<A>(predicate: predicate.Predicate<A>): (as: Stream<A>) => taskOption.TaskOption<A>
 export function findLast<A>(predicate: predicate.Predicate<A>): (as: Stream<A>) => taskOption.TaskOption<A> {
@@ -386,7 +424,7 @@ export function findLast<A>(predicate: predicate.Predicate<A>): (as: Stream<A>) 
  * }
  *
  * const persons: stream.Stream<Person> = stream.fromArray([{ name: 'John' }, { name: 'Mary', age: 45 }, { name: 'Joey', age: 28 }])
- * 
+ *
  * pipe(
  *  persons,
  *  stream.findLastMap(person => person.age ? option.some(person.age) : option.none),
@@ -395,9 +433,8 @@ export function findLast<A>(predicate: predicate.Predicate<A>): (as: Stream<A>) 
  *
  * @since 0.1.0
  */
-export const findLastMap =
-  <A, B>(f: (a: A) => option.Option<B>): (as: Stream<A>) => taskOption.TaskOption<B> =>
-    findLastMapWithIndex((_, a) => f(a))
+export const findLastMap = <A, B>(f: (a: A) => option.Option<B>): ((as: Stream<A>) => taskOption.TaskOption<B>) =>
+  findLastMapWithIndex((_, a) => f(a))
 
 /**
  * Find the last index for which a predicate holds
@@ -412,18 +449,19 @@ export const findLastMap =
  *  stream.findLastIndex((a) => a === 2),
  *  task.map(res => assert.deepStrictEqual(option.some(3), res))
  * )()
- * 
+ *
  * pipe(
  *  stream.fromArray([]),
  *  stream.findLastIndex((a) => a === 2),
  *  task.map(res => assert.deepStrictEqual(option.none, res))
  * )()
- * 
+ *
  * @since 0.1.0
  */
-export const findLastIndex =
-  <A>(predicate: predicate.Predicate<A>): (as: Stream<A>) => task.Task<option.Option<number>> =>
-    findLastMapWithIndex((i, a) => predicate(a) ? option.some(i) : option.none)
+export const findLastIndex = <A>(
+  predicate: predicate.Predicate<A>
+): ((as: Stream<A>) => task.Task<option.Option<number>>) =>
+  findLastMapWithIndex((i, a) => (predicate(a) ? option.some(i) : option.none))
 
 /**
  * Test if a value is a member of an `Stream`. Takes a `Eq<A>` as a single
@@ -434,13 +472,13 @@ export const findLastIndex =
  * import { pipe } from 'fp-ts/function'
  * import { task, number } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
- * 
+ *
  * pipe(
  *  stream.fromArray([1, 2, 3]),
  *  stream.elem(number.Eq)(2),
  *  task.map(res => assert.equal(true, res))
  * )()
- * 
+ *
  * pipe(
  *  stream.fromArray([1, 2, 3]),
  *  stream.elem(number.Eq)(0),
@@ -449,17 +487,20 @@ export const findLastIndex =
  *
  * @since 0.1.0
  */
-export const elem = <A>(E: eq.Eq<A>) => (a: A) => (as: Stream<A>): task.Task<boolean> =>
-  pipe(
-    as,
-    findFirst((x) => E.equals(x, a)),
-    task.map(option.isSome),
-  )
+export const elem =
+  <A>(E: eq.Eq<A>) =>
+    (a: A) =>
+      (as: Stream<A>): task.Task<boolean> =>
+        pipe(
+          as,
+          findFirst((x) => E.equals(x, a)),
+          task.map(option.isSome)
+        )
 
 /**
  * Creates a new `Stream` removing duplicate elements, keeping the first occurrence of an element,
  * based on a `Eq<A>`.
- * 
+ *
  * This is a naive implementation, which uses an array to store the encountered elements and has
  * a memory complexity of O(n) where n is the number of uniq elements in the `Stream`.
  *
@@ -467,65 +508,67 @@ export const elem = <A>(E: eq.Eq<A>) => (a: A) => (as: Stream<A>): task.Task<boo
  * import { pipe } from 'fp-ts/function'
  * import { task, number } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
- * 
+ *
  * pipe(
  *  stream.fromArray([1, 2, 1]),
  *  stream.uniq(number.Eq),
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual([1, 2], res))
  * )()
- * 
+ *
  * @since 0.1.0
  */
-export const uniq = <A>(E: eq.Eq<A>) => (as: Stream<A>): Stream<A> => async function* () {
-  let seen: Array<A> = []
+export const uniq =
+  <A>(E: eq.Eq<A>) =>
+    (as: Stream<A>): Stream<A> =>
+      async function* () {
+        let seen: Array<A> = []
 
-  for await (const a of as()) {
-    const isSeen = pipe(
-      seen,
-      array.exists((x) => E.equals(x, a)),
-    )
+        for await (const a of as()) {
+          const isSeen = pipe(
+            seen,
+            array.exists((x) => E.equals(x, a))
+          )
 
-
-    if (!isSeen) {
-      seen = [...seen, a]
-      yield a
-    }
-  }
-}
+          if (!isSeen) {
+            seen = [...seen, a]
+            yield a
+          }
+        }
+      }
 
 /**
  * Broadcast the stream to another stream without consuming multiple times
  * from the source.
- * 
+ *
  * If one consumer is slower than the other, the slower consumer will
- * 
+ *
  * @example
  * import { pipe } from 'fp-ts/function'
  * import { task, number } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
- * 
+ *
  * const [s1, s2] = pipe(
  *  stream.fromArray([1, 2, 3, 4, 5, 6]),
  *  stream.broadcast,
  * )
- * 
+ *
  * const test1 = pipe(
  *  s1,
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, [1, 2, 3, 4, 5, 6]))
  * )
- * 
+ *
  * const test2 = pipe(
  *  s2,
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, [1, 2, 3, 4, 5, 6]))
  * )
- * 
+ *
  * pipe(
  *  task.sequenceArray([test1, test2]),
  * )()
- * 
+ *
  * @since 0.1.0
  */
 export const broadcast = <A>(as: Stream<A>): [Stream<A>, Stream<A>] => {
@@ -576,7 +619,7 @@ export const broadcast = <A>(as: Stream<A>): [Stream<A>, Stream<A>] => {
           return
         }
       }
-    },
+    }
   ]
 }
 
@@ -588,14 +631,14 @@ export const broadcast = <A>(as: Stream<A>): [Stream<A>, Stream<A>] => {
  * import { pipe } from 'fp-ts/function'
  * import { task, option } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
- * 
+ *
  * pipe(
  *  stream.fromArray([1, 2, 3]),
  *  stream.init,
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, [1, 2]))
  * )()
- * 
+ *
  * pipe(
  *  stream.fromArray([]),
  *  stream.init,
@@ -630,28 +673,28 @@ export const init = <A>(as: Stream<A>): Stream<A> =>
  * import { stream } from 'fp-async-generator-streams'
  *
  * const stream1To5 = stream.fromRange(1, 6)
- * 
+ *
  * pipe(
  *  stream1To5,
  *  stream.take(2),
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, [1, 2]))
  * )()
- * 
+ *
  * pipe(
  *  stream1To5,
  *  stream.take(7),
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, [1, 2, 3, 4, 5]))
  * )()
- * 
+ *
  * pipe(
  *   stream1To5,
  *   stream.take(0),
  *   stream.toArray,
  *   task.map(res => assert.deepStrictEqual(res, []))
  * )()
- * 
+ *
  * pipe(
  *   stream1To5,
  *   stream.take(-1),
@@ -684,7 +727,7 @@ export const take =
  * import { pipe } from 'fp-ts/function'
  * import { task, option } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
- * 
+ *
  * pipe(
  *   [2, 4, 3, 6],
  *   stream.fromArray,
@@ -699,15 +742,16 @@ export function takeWhile<A, B extends A>(refinement: refinement.Refinement<A, B
 export function takeWhile<A>(predicate: predicate.Predicate<A>): <B extends A>(bs: Stream<B>) => Stream<B>
 export function takeWhile<A>(predicate: predicate.Predicate<A>): (as: Stream<A>) => Stream<A>
 export function takeWhile<A>(predicate: predicate.Predicate<A>): (as: Stream<A>) => Stream<A> {
-  return (as: Stream<A>) => async function* () {
-    for await (const a of as()) {
-      if (!predicate(a)) {
-        return
-      }
+  return (as: Stream<A>) =>
+    async function* () {
+      for await (const a of as()) {
+        if (!predicate(a)) {
+          return
+        }
 
-      yield a
+        yield a
+      }
     }
-  }
 }
 
 /**
@@ -719,30 +763,30 @@ export function takeWhile<A>(predicate: predicate.Predicate<A>): (as: Stream<A>)
  * import { pipe } from 'fp-ts/function'
  * import { task, option } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
- * 
+ *
  * const stream1To3 = stream.fromRange(1, 4)
- * 
+ *
  * pipe(
  *  stream1To3,
  *  stream.drop(2),
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, [3]))
  * )()
- * 
+ *
  * pipe(
  *  stream1To3,
  *  stream.drop(5),
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, []))
  * )()
- * 
+ *
  * pipe(
  *  stream1To3,
  *  stream.drop(0),
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, [1, 2, 3]))
  * )()
- * 
+ *
  * pipe(
  *  stream1To3,
  *  stream.drop(-2),
@@ -775,7 +819,7 @@ export const drop =
  * import { pipe } from 'fp-ts/function'
  * import { task, option } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
- * 
+ *
  * pipe(
  *  ["c", "b", "a", "c", "e"],
  *  stream.fromArray,
@@ -786,25 +830,34 @@ export const drop =
  *
  * @since 0.1.0
  */
-export function dropWhileIndex<A, B extends A>(refinement: filterableWithIndex.RefinementWithIndex<number, A, B>): (as: Stream<A>) => Stream<B>
-export function dropWhileIndex<A>(predicate: filterableWithIndex.PredicateWithIndex<number, A>): <B extends A>(bs: Stream<B>) => Stream<B>
-export function dropWhileIndex<A>(predicate: filterableWithIndex.PredicateWithIndex<number, A>): (as: Stream<A>) => Stream<A>
-export function dropWhileIndex<A>(predicate: filterableWithIndex.PredicateWithIndex<number, A>): (as: Stream<A>) => Stream<A> {
-  return (as) => async function* () {
-    let idx = 0
-    let yielding = false
+export function dropWhileIndex<A, B extends A>(
+  refinement: filterableWithIndex.RefinementWithIndex<number, A, B>
+): (as: Stream<A>) => Stream<B>
+export function dropWhileIndex<A>(
+  predicate: filterableWithIndex.PredicateWithIndex<number, A>
+): <B extends A>(bs: Stream<B>) => Stream<B>
+export function dropWhileIndex<A>(
+  predicate: filterableWithIndex.PredicateWithIndex<number, A>
+): (as: Stream<A>) => Stream<A>
+export function dropWhileIndex<A>(
+  predicate: filterableWithIndex.PredicateWithIndex<number, A>
+): (as: Stream<A>) => Stream<A> {
+  return (as) =>
+    async function* () {
+      let idx = 0
+      let yielding = false
 
-    for await (const a of as()) {
-      if (yielding) {
-        yield a
-      } else if (!predicate(idx, a)) {
-        yielding = true
-        yield a
+      for await (const a of as()) {
+        if (yielding) {
+          yield a
+        } else if (!predicate(idx, a)) {
+          yielding = true
+          yield a
+        }
+
+        idx++
       }
-
-      idx++
     }
-  }
 }
 
 /**
@@ -815,7 +868,7 @@ export function dropWhileIndex<A>(predicate: filterableWithIndex.PredicateWithIn
  * import { pipe } from 'fp-ts/function'
  * import { task, option } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
- * 
+ *
  * pipe(
  *  [1, 3, 2, 4, 5],
  *  stream.fromArray,
@@ -854,7 +907,7 @@ export type Spanned<I, R> = {
  * import { stream } from 'fp-async-generator-streams'
  *
  * const isOdd = (n: number) => n % 2 === 1;
- * 
+ *
  * pipe(
  *  [1, 3, 2, 4, 5],
  *  stream.fromArray,
@@ -862,7 +915,7 @@ export type Spanned<I, R> = {
  *  ({ init, rest }) => apply.sequenceS(task.task)({ init: stream.toArray(init), rest: stream.toArray(rest) }),
  *  task.map(res => assert.deepStrictEqual(res, { init: [1, 3], rest: [2, 4, 5] }))
  * )()
- * 
+ *
  * pipe(
  *  [0, 2, 4, 5],
  *  stream.fromArray,
@@ -870,7 +923,7 @@ export type Spanned<I, R> = {
  *  ({ init, rest }) => apply.sequenceS(task.task)({ init: stream.toArray(init), rest: stream.toArray(rest) }),
  *  task.map(res => assert.deepStrictEqual(res, { init: [], rest: [0, 2, 4, 5] }))
  * )()
- * 
+ *
  * pipe(
  *  [1, 3, 5],
  *  stream.fromArray,
@@ -885,13 +938,8 @@ export function spanLeft<A, B extends A>(refinement: refinement.Refinement<A, B>
 export function spanLeft<A>(predicate: predicate.Predicate<A>): <B extends A>(bs: Stream<B>) => Spanned<B, B>
 export function spanLeft<A>(predicate: predicate.Predicate<A>): (as: Stream<A>) => Spanned<A, A>
 export function spanLeft<A>(predicate: predicate.Predicate<A>): (as: Stream<A>) => Spanned<A, A> {
-  return flow(
-    broadcast,
-    tuple.bimap(dropWhile(predicate), takeWhile(predicate)),
-    ([init, rest]) => ({ init, rest })
-  )
+  return flow(broadcast, tuple.bimap(dropWhile(predicate), takeWhile(predicate)), ([init, rest]) => ({ init, rest }))
 }
-
 
 /**
  * Splits a stream into length-`n` pieces. The last piece will be shorter if `n` does not evenly divide the length of
@@ -909,7 +957,7 @@ export function spanLeft<A>(predicate: predicate.Predicate<A>): (as: Stream<A>) 
  * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
- * const test = 
+ * const test =
  *   pipe(
  *     stream.fromArray([1, 2, 3, 4, 5]),
  *     stream.chunksOf(2),
@@ -918,9 +966,9 @@ export function spanLeft<A>(predicate: predicate.Predicate<A>): (as: Stream<A>) 
  *       chunks => assert.deepStrictEqual(chunks, [[1, 2], [3, 4], [5]])
  *     ),
  *   )
- * 
+ *
  * test()
- * 
+ *
  * @since 0.1.0
  */
 export const chunksOf =
@@ -952,14 +1000,14 @@ export const chunksOf =
  * import { stream } from 'fp-async-generator-streams'
  *
  * const f = (i: number, s: string) => `${s} - ${i}`;
- * const test = 
+ * const test =
  *  pipe(
  *    stream.fromArray(["a", "b", "c"]),
  *    stream.mapWithIndex(f),
  *    stream.toArray,
  *    task.map(mapped => assert.deepStrictEqual(mapped, ["a - 0", "b - 1", "c - 2"]))
  *  )
- * 
+ *
  * test()
  *
  * @category mapping
@@ -988,14 +1036,14 @@ export const mapWithIndex =
  * import { stream } from 'fp-async-generator-streams'
  *
  * const f = (n: number) => n * 2;
- * const test = 
+ * const test =
  *  pipe(
  *    stream.fromArray([1, 2, 3]),
  *    stream.map(f),
  *    stream.toArray,
  *    task.map(mapped => assert.deepStrictEqual(mapped, [2, 4, 6]))
  *  )
- * 
+ *
  * test()
  *
  * @category mapping
@@ -1026,7 +1074,7 @@ export const map =
  *    stream.toArray,
  *    task.map(chained => assert.deepStrictEqual(chained, ["a0", "a0", "b1", "b1", "c2", "c2"]))
  *  )
- * 
+ *
  * test()
  *
  * @category sequencing
@@ -1050,7 +1098,7 @@ export const chainWithIndex =
  * A useful recursion pattern for processing a `ReadonlyNonEmptyArray` to produce a new `ReadonlyNonEmptyArray`, often used for "chopping" up the input
  * `ReadonlyNonEmptyArray`. Typically `chop` is called with some function that will consume an initial prefix of the `ReadonlyNonEmptyArray` and produce a
  * value and the tail of the `ReadonlyNonEmptyArray`.
- * 
+ *
  * @example
  * import { stream } from 'fp-async-generator-streams'
  * import { pipe } from 'fp-ts/function'
@@ -1062,62 +1110,60 @@ export const chainWithIndex =
  *       as,
  *       stream.broadcast,
  *     )
- * 
+ *
  *     const head = await pipe(
  *       s1,
  *       stream.take(1),
  *       stream.toArray,
  *     )()
- * 
+ *
  *     const { init, rest } = pipe(
  *       s2,
  *       stream.spanLeft((a: A) => S.equals(a, head[0])),
  *     )
- * 
+ *
  *     const chunked = await stream.toArray(init)()
  *     return [chunked, rest]
  *   })
  * }
- * 
+ *
  * const groupedStream = pipe(
  *  stream.fromArray([1, 1, 2, 3, 3, 4]),
  *  group(number.Eq),
  * )
- * 
+ *
  * pipe(
  *  groupedStream,
  *  stream.toArray,
  *  task.map(chopped => assert.deepStrictEqual(chopped, [[1, 1], [2], [3, 3], [4]]))
  * )()
- * 
+ *
  * @since 2.10.0
  */
 export const chop =
   <A, B>(f: (as: Stream<A>) => task.Task<readonly [B, Stream<A>]>) =>
-    (as: Stream<A>): Stream<B> => async function* () {
-      const [b, rest] = await f(as)()
-      yield b
-
-      let next: Stream<A> = rest
-
-      while (true) {
-        const iterator = next()[Symbol.asyncIterator]()
-        const { value, done } = await iterator.next()
-
-        if (done) {
-          return
-        }
-
-        const [b, rest] = await f(pipe(
-          () => iterator,
-          prepend(value),
-        ))()
-
+    (as: Stream<A>): Stream<B> =>
+      async function* () {
+        const [b, rest] = await f(as)()
         yield b
 
-        next = rest
+        let next: Stream<A> = rest
+
+        while (true) {
+          const iterator = next()[Symbol.asyncIterator]()
+          const { value, done } = await iterator.next()
+
+          if (done) {
+            return
+          }
+
+          const [b, rest] = await f(pipe(() => iterator, prepend(value)))()
+
+          yield b
+
+          next = rest
+        }
       }
-    }
 
 /**
  * Splits a `Stream` into two pieces, the first piece has max `n` elements.
@@ -1126,7 +1172,7 @@ export const chop =
  * import { stream } from 'fp-async-generator-streams'
  * import { pipe } from 'fp-ts/function'
  * import { task, array } from 'fp-ts'
- * 
+ *
  * pipe(
  *  stream.fromArray([1, 2, 3, 4, 5]),
  *  stream.splitAt(2),
@@ -1136,18 +1182,8 @@ export const chop =
  *
  * @since 0.1.0
  */
-export const splitAt =
-  (n: number):
-    <A>(as: Stream<A>) => [Stream<A>, Stream<A>] =>
-    flow(
-      broadcast,
-      tuple.bimap(
-        drop(n),
-        take(n),
-      )
-    )
-
-
+export const splitAt = (n: number): (<A>(as: Stream<A>) => [Stream<A>, Stream<A>]) =>
+  flow(broadcast, tuple.bimap(drop(n), take(n)))
 
 /**
  * Composes computations in sequence, using the return value of one computation to
@@ -1173,15 +1209,13 @@ export const splitAt =
  *    stream.toArray,
  *    task.map(chained => assert.deepStrictEqual(chained, ['1', '2', '2', '3', '3', '3']))
  *  )
- * 
+ *
  * test()
  *
  * @category sequencing
  * @since 0.1.0
  */
-export const chain =
-  <A, B>(f: (a: A) => Stream<B>): (as: Stream<A>) => Stream<B> =>
-    chainWithIndex((_, a) => f(a))
+export const chain = <A, B>(f: (a: A) => Stream<B>): ((as: Stream<A>) => Stream<B>) => chainWithIndex((_, a) => f(a))
 
 /**
  * Takes an stream of streams of `A` and flattens them into an stream of `A`
@@ -1191,7 +1225,7 @@ export const chain =
  * import { task, array } from 'fp-ts'
  * import { pipe } from 'fp-ts/function'
  * import { stream } from 'fp-async-generator-streams'
- * 
+ *
  * pipe(
  *  [["a"], ["b", "c"], ["d", "e", "f"]],
  *  stream.fromArray,
@@ -1223,7 +1257,7 @@ export const flatten: <A>(mma: Stream<Stream<A>>) => Stream<A> = /*#__PURE__*/ c
  *     stream.toArray,
  *     task.map(combined => assert.deepStrictEqual(combined, [1, 2, 3, 'a', 'b']))
  *   )
- * 
+ *
  * test()
  *
  * @category error handling
@@ -1237,29 +1271,29 @@ export const altW =
     }
 
 /**
-* Identifies an associative operation on a type constructor. It is similar to `Semigroup`, except that it applies to
-* types of kind `* -> *`.
-*
-* In case of `Stream` concatenates the inputs into a single stream.
-*
-* @example
-* import { stream } from 'fp-async-generator-streams'
-* import { task } from 'fp-ts'
-* import { pipe } from 'fp-ts/function'
-*
-* const test =
-*   pipe(
-*     stream.fromArray([1, 2, 3]),
-*     stream.alt(() => stream.fromArray([4, 5])),
-*     stream.toArray,
-*     task.map(combined => assert.deepStrictEqual(combined, [1, 2, 3, 4, 5]))
-*   )
-* 
-* test()
-*
-* @category error handling
-* @since 0.1.0
-*/
+ * Identifies an associative operation on a type constructor. It is similar to `Semigroup`, except that it applies to
+ * types of kind `* -> *`.
+ *
+ * In case of `Stream` concatenates the inputs into a single stream.
+ *
+ * @example
+ * import { stream } from 'fp-async-generator-streams'
+ * import { task } from 'fp-ts'
+ * import { pipe } from 'fp-ts/function'
+ *
+ * const test =
+ *   pipe(
+ *     stream.fromArray([1, 2, 3]),
+ *     stream.alt(() => stream.fromArray([4, 5])),
+ *     stream.toArray,
+ *     task.map(combined => assert.deepStrictEqual(combined, [1, 2, 3, 4, 5]))
+ *   )
+ *
+ * test()
+ *
+ * @category error handling
+ * @since 0.1.0
+ */
 export const alt: <A>(that: Lazy<Stream<A>>) => (fa: Stream<A>) => Stream<A> = altW
 
 /**
@@ -1280,14 +1314,14 @@ export const alt: <A>(that: Lazy<Stream<A>>) => (fa: Stream<A>) => Stream<A> = a
  *   const inputForNextRound = n - 1;
  *   return option.some([returnValue, inputForNextRound] as const);
  * };
- * 
+ *
  * const test =
  *  pipe(
  *   stream.unfold(5, f),
  *   stream.toArray,
  *   task.map(unfolded => assert.deepStrictEqual(unfolded, [10, 8, 6, 4, 2])),
  *  )
- *    
+ *
  * test()
  *
  * @category constructors
@@ -1319,19 +1353,19 @@ export const unfold = <A, B>(b: B, f: (b: B) => option.Option<readonly [A, B]>):
  * import { stream } from 'fp-async-generator-streams'
  *
  * const double = (i: number): number => i * 2
- * 
+ *
  * pipe(
  *  stream.makeBy(5, double),
  *  stream.toArray,
  *  task.map(array => assert.deepStrictEqual(array, [0, 2, 4, 6, 8]))
  * )()
- * 
+ *
  * pipe(
  *  stream.makeBy(-3, double),
  *  stream.toArray,
  *  task.map(array => assert.deepStrictEqual(array, []))
  * )()
- * 
+ *
  * pipe(
  *  stream.makeBy(4.32164, double),
  *  stream.toArray,
@@ -1341,12 +1375,13 @@ export const unfold = <A, B>(b: B, f: (b: B) => option.Option<readonly [A, B]>):
  * @category constructors
  * @since 0.1.0
  */
-export const makeBy = <A>(n: number, f: (i: number) => A): Stream<A> => async function* () {
-  const j = Math.max(0, Math.floor(n))
-  for (let i = 0; i < j; i++) {
-    yield f(i)
+export const makeBy = <A>(n: number, f: (i: number) => A): Stream<A> =>
+  async function* () {
+    const j = Math.max(0, Math.floor(n))
+    for (let i = 0; i < j; i++) {
+      yield f(i)
+    }
   }
-}
 
 /**
  * Create a `Stream` containing a value repeated the specified number of times.
@@ -1358,19 +1393,19 @@ export const makeBy = <A>(n: number, f: (i: number) => A): Stream<A> => async fu
  * import { option, task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
- * 
+ *
  * pipe(
  *   stream.replicate(3, 'a'),
  *   stream.toArray,
  *   task.map(array => assert.deepStrictEqual(array, ['a', 'a', 'a']))
  * )()
- * 
+ *
  * pipe(
  *   stream.replicate(-3, 'a'),
  *   stream.toArray,
  *   task.map(array => assert.deepStrictEqual(array, []))
  * )()
- * 
+ *
  * pipe(
  *   stream.replicate(2.985647, 'a'),
  *   stream.toArray,
@@ -1382,24 +1417,23 @@ export const makeBy = <A>(n: number, f: (i: number) => A): Stream<A> => async fu
  */
 export const replicate = <A>(n: number, a: A): Stream<A> => makeBy(n, () => a)
 
-
 /**
  * Insert an element at the specified index, creating a new stream.
  * If the index is out of bounds, the original stream is returned.
- * 
+ *
  *
  * @example
  * import { pipe } from 'fp-ts/function'
  * import { option, task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
- * 
+ *
  * pipe(
  *  stream.fromArray([1, 2, 3, 4]),
  *  stream.insertAt(2, 5),
  *  stream.toArray,
  *  task.map(array => assert.deepStrictEqual(array, [1, 2, 5, 3, 4]))
  * )()
- * 
+ *
  * pipe(
  *  stream.fromArray([1, 2, 3, 4]),
  *  stream.insertAt(4, 5),
@@ -1434,14 +1468,14 @@ export const insertAt =
  * import { stream } from 'fp-async-generator-streams'
  *
  * const double = (x: number): number => x * 2
- * 
+ *
  * pipe(
  *  stream.fromArray([1, 2, 3]),
  *  stream.modifyAt(1, double),
  *  stream.toArray,
  *  task.map(array => assert.deepStrictEqual(array, [1, 4, 3]))
  * )()
- * 
+ *
  * pipe(
  *  stream.zero<number>(),
  *  stream.modifyAt(1, double),
@@ -1477,7 +1511,7 @@ export const modifyAt =
  *  stream.toArray,
  *  task.map(array => assert.deepStrictEqual(array, [1, 1, 3]))
  * )()
- * 
+ *
  * pipe(
  *  stream.zero<number>(),
  *  stream.updateAt(1, 1),
@@ -1487,8 +1521,7 @@ export const modifyAt =
  *
  * @since 0.1.0
  */
-export const updateAt = <A>(i: number, a: A): (as: Stream<A>) => Stream<A> =>
-  modifyAt(i, () => a)
+export const updateAt = <A>(i: number, a: A): ((as: Stream<A>) => Stream<A>) => modifyAt(i, () => a)
 
 /**
  * Apply a function to pairs of elements at the same index in two streams, collecting the results in a new stream. If one
@@ -1498,10 +1531,10 @@ export const updateAt = <A>(i: number, a: A): (as: Stream<A>) => Stream<A> =>
  * import { pipe } from 'fp-ts/function'
  * import { option, task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
- * 
+ *
  * pipe(
  *  stream.zipWith(
- *    stream.fromArray([1, 2, 3]), 
+ *    stream.fromArray([1, 2, 3]),
  *    stream.fromArray(['a', 'b', 'c', 'd']),
  *     (a, b) => a + b,
  *  ),
@@ -1511,24 +1544,21 @@ export const updateAt = <A>(i: number, a: A): (as: Stream<A>) => Stream<A> =>
  *
  * @since 0.1.0
  */
-export const zipWith = <A, B, C>(
-  fa: Stream<A>,
-  fb: Stream<B>,
-  f: (a: A, b: B) => C
-): Stream<C> => async function* () {
-  const iteratorA = fa()[Symbol.asyncIterator]()
-  const iteratorB = fb()[Symbol.asyncIterator]()
-  while (true) {
-    const { value: a, done: doneA } = await iteratorA.next()
-    const { value: b, done: doneB } = await iteratorB.next()
+export const zipWith = <A, B, C>(fa: Stream<A>, fb: Stream<B>, f: (a: A, b: B) => C): Stream<C> =>
+  async function* () {
+    const iteratorA = fa()[Symbol.asyncIterator]()
+    const iteratorB = fb()[Symbol.asyncIterator]()
+    while (true) {
+      const { value: a, done: doneA } = await iteratorA.next()
+      const { value: b, done: doneB } = await iteratorB.next()
 
-    if (doneA || doneB) {
-      return
+      if (doneA || doneB) {
+        return
+      }
+
+      yield f(a, b)
     }
-
-    yield f(a, b)
   }
-}
 
 /**
  * Takes two streams and returns an stream of corresponding pairs. If one input stream is short, excess elements of the
@@ -1541,7 +1571,7 @@ export const zipWith = <A, B, C>(
  *
  * pipe(
  *  stream.zip(
- *    stream.fromArray([1, 2, 3]), 
+ *    stream.fromArray([1, 2, 3]),
  *    stream.fromArray(['a', 'b', 'c', 'd']),
  *  ),
  *  stream.toArray,
@@ -1588,7 +1618,7 @@ export const unzip = <A, B>(as: Stream<readonly [A, B]>): readonly [Stream<A>, S
     broadcast(as),
     tuple.bimap(
       map(([_, b]) => b),
-      map(([a]) => a),
+      map(([a]) => a)
     )
   )
 }
@@ -1600,7 +1630,7 @@ export const unzip = <A, B>(as: Stream<readonly [A, B]>): readonly [Stream<A>, S
  * import { pipe } from 'fp-ts/function'
  * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
- * 
+ *
  * pipe(
  *  stream.prependAll(9)(stream.fromArray([1, 2, 3, 4])),
  *  stream.toArray,
@@ -1609,8 +1639,7 @@ export const unzip = <A, B>(as: Stream<readonly [A, B]>): readonly [Stream<A>, S
  *
  * @since 2.10.0
  */
-export const prependAll = <A>(middle: A): ((as: Stream<A>) => Stream<A>) =>
-  chain((a) => fromArray([middle, a]))
+export const prependAll = <A>(middle: A): ((as: Stream<A>) => Stream<A>) => chain((a) => fromArray([middle, a]))
 
 /**
  * Creates a new `Stream` placing an element in between members of the input `Stream`.
@@ -1620,17 +1649,16 @@ export const prependAll = <A>(middle: A): ((as: Stream<A>) => Stream<A>) =>
  * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
- * 
+ *
  * pipe(
  *  stream.intersperse(9)(stream.fromArray([1, 2, 3, 4])),
  *  stream.toArray,
  *  task.map(array => assert.deepStrictEqual(array, [1, 9, 2, 9, 3, 9, 4]))
  * )
- * 
+ *
  * @since 0.1.0
  */
-export const intersperse = <A>(middle: A): ((as: Stream<A>) => Stream<A>) =>
-  flow(prependAll(middle), drop(1))
+export const intersperse = <A>(middle: A): ((as: Stream<A>) => Stream<A>) => flow(prependAll(middle), drop(1))
 
 /**
  * Creates a new `Stream` rotating the input `Stream` by `n` steps.
@@ -1646,26 +1674,28 @@ export const intersperse = <A>(middle: A): ((as: Stream<A>) => Stream<A>) =>
  *  stream.toArray,
  *  task.map(array => assert.deepStrictEqual(array, [4, 5, 1, 2, 3]))
  * )
- * 
+ *
  * @since 0.1.0
  */
-export const rotate = (n: number) => <A>(as: Stream<A>): Stream<A> => async function* () {
-  let idx = 0
-  const buffer: Array<A> = []
+export const rotate =
+  (n: number) =>
+    <A>(as: Stream<A>): Stream<A> =>
+      async function* () {
+        let idx = 0
+        const buffer: Array<A> = []
 
-  for await (const a of as()) {
-    if (idx < n) {
-      buffer.push(a)
-    } else {
-      yield a
-    }
+        for await (const a of as()) {
+          if (idx < n) {
+            buffer.push(a)
+          } else {
+            yield a
+          }
 
-    idx++
-  }
+          idx++
+        }
 
-  yield* buffer
-}
-
+        yield* buffer
+      }
 
 // -------------------------------------------------------------------------------------
 // constructors
@@ -1686,7 +1716,7 @@ export const rotate = (n: number) => <A>(as: Stream<A>): Stream<A> => async func
  *    stream.toArray,
  *    task.map(res => assert.deepStrictEqual(res, ["a", "b", "c"]))
  *  )
- * 
+ *
  * test()
  *
  * @category conversions
@@ -1710,7 +1740,7 @@ export const fromRec =
 
 /**
  * Create a stream of single element from the value of a  Task.
- * 
+ *
  * @example
  * import { pipe } from 'fp-ts/function'
  * import { task } from 'fp-ts'
@@ -1722,7 +1752,7 @@ export const fromRec =
  *    stream.toArray,
  *    task.map(res => assert.deepStrictEqual(res, ["abc"]))
  *  )
- * 
+ *
  * test()
  *
  * @category conversions
@@ -1734,25 +1764,25 @@ export const fromTask = <A>(task: task.Task<A>): Stream<A> =>
   }
 
 /**
-* Create a stream of single element from the value of a  IO.
-* 
-* @example
-* import { pipe } from 'fp-ts/function'
-* import { io, task } from 'fp-ts'
-* import { stream } from 'fp-async-generator-streams'
-*
-* const test =
-*  pipe(
-*    stream.fromIO(io.of("abc")),
-*    stream.toArray,
-*    task.map(res => assert.deepStrictEqual(res, ["abc"]))
-*  )
-* 
-* test()
-*
-* @category conversions
-* @since 0.1.0
-*/
+ * Create a stream of single element from the value of a  IO.
+ *
+ * @example
+ * import { pipe } from 'fp-ts/function'
+ * import { io, task } from 'fp-ts'
+ * import { stream } from 'fp-async-generator-streams'
+ *
+ * const test =
+ *  pipe(
+ *    stream.fromIO(io.of("abc")),
+ *    stream.toArray,
+ *    task.map(res => assert.deepStrictEqual(res, ["abc"]))
+ *  )
+ *
+ * test()
+ *
+ * @category conversions
+ * @since 0.1.0
+ */
 export const fromIO = <A>(effect: io.IO<A>): Stream<A> =>
   async function* () {
     yield effect()
@@ -1760,7 +1790,7 @@ export const fromIO = <A>(effect: io.IO<A>): Stream<A> =>
 
 /**
  * Create a stream from a range of numbers.
- * 
+ *
  * @param start The start of the range (inclusive)
  * @param end The end of the range (exclusive)
  *
@@ -1775,7 +1805,7 @@ export const fromIO = <A>(effect: io.IO<A>): Stream<A> =>
  *    stream.toArray,
  *    task.map(res => assert.deepStrictEqual(res, [0, 1, 2, 3, 4]))
  *  )
- * 
+ *
  * test()
  *
  * @category conversions
@@ -1786,8 +1816,8 @@ export const fromRange = (start: number, end: number = Number.POSITIVE_INFINITY)
     option.some(start),
     fromRec(
       flow(
-        option.map(r => r + 1),
-        option.filter(r => r < end),
+        option.map((r) => r + 1),
+        option.filter((r) => r < end)
       )
     )
   )
@@ -1807,7 +1837,7 @@ export const fromRange = (start: number, end: number = Number.POSITIVE_INFINITY)
  *    stream.toArray,
  *    task.map(res => assert.deepStrictEqual(res, ["a", "b", "c"]))
  *  )
- * 
+ *
  * test()
  *
  * @category conversions
@@ -1836,35 +1866,35 @@ export const fromArrayK =
  * import { pipe } from 'fp-ts/function'
  * import { isString } from "fp-ts/lib/string";
  * import { task } from 'fp-ts'
- * 
+ *
  * pipe(
  *   "a",
  *   stream.fromPredicate(isString),
  *   stream.toArray,
  *   task.map(res => assert.deepStrictEqual(res, ["a"]))
  * )()
- * 
+ *
  * pipe(
  *   7,
  *   stream.fromPredicate(isString),
  *   stream.toArray,
  *   task.map(res => assert.deepStrictEqual(res, []))
  * )()
- * 
+ *
  * pipe(
  *   7,
  *   stream.fromPredicate((x)=> x > 0),
  *   stream.toArray,
  *   task.map(res => assert.deepStrictEqual(res, [7]))
  * )()
- * 
+ *
  * pipe(
  *   -3,
  *   stream.fromPredicate((x)=> x > 0),
  *   stream.toArray,
  *   task.map(res => assert.deepStrictEqual(res, []))
  * )()
- * 
+ *
  * @category lifting
  * @since 2.11.0
  */
@@ -1888,14 +1918,14 @@ export function fromPredicate<A>(predicate: predicate.Predicate<A>): (a: A) => S
  * import { option } from "fp-ts";
  * import { pipe } from 'fp-ts/function'
  * import { task } from 'fp-ts'
- * 
+ *
  * pipe(
  *   option.some("a"),
  *   stream.fromOption,
  *   stream.toArray,
  *   task.map(res => assert.deepStrictEqual(res, ["a"]))
  * )()
- * 
+ *
  * pipe(
  *   option.none,
  *   stream.fromOption,
@@ -1908,8 +1938,6 @@ export function fromPredicate<A>(predicate: predicate.Predicate<A>): (a: A) => S
  */
 export const fromOption: <A>(fa: option.Option<A>) => Stream<A> = (ma) => (option.isNone(ma) ? zero() : of(ma.value))
 
-
-
 /**
  * Create an stream from an `Either`. The resulting stream will contain the content of the
  * `Either` if it is `Right` and it will be empty if the `Either` is `Left`.
@@ -1919,14 +1947,14 @@ export const fromOption: <A>(fa: option.Option<A>) => Stream<A> = (ma) => (optio
  * import { either } from "fp-ts";
  * import { pipe } from 'fp-ts/function'
  * import { task } from 'fp-ts'
- * 
+ *
  * pipe(
  *   either.right("r"),
  *   stream.fromEither,
  *   stream.toArray,
  *   task.map(res => assert.deepStrictEqual(res, ["r"]))
  * )()
- * 
+ *
  * pipe(
  *   either.left("l"),
  *   stream.fromEither,
@@ -1937,7 +1965,8 @@ export const fromOption: <A>(fa: option.Option<A>) => Stream<A> = (ma) => (optio
  * @category conversions
  * @since 2.11.0
  */
-export const fromEither: <A>(fa: either.Either<unknown, A>) => Stream<A> = (e) => (either.isLeft(e) ? zero() : of(e.right))
+export const fromEither: <A>(fa: either.Either<unknown, A>) => Stream<A> = (e) =>
+  either.isLeft(e) ? zero() : of(e.right)
 
 /**
  * Given an iterating function that is a `Predicate` or a `Refinement`,
@@ -1964,7 +1993,7 @@ export const fromEither: <A>(fa: either.Either<unknown, A>) => Stream<A> = (e) =
  *     right: ["a", "b"],
  *   })),
  * )()
- * 
+ *
  * pipe(
  *   [-3, 1, -2, 5],
  *   stream.fromArray,
@@ -1982,43 +2011,49 @@ export const fromEither: <A>(fa: either.Either<unknown, A>) => Stream<A> = (e) =
  * @since 0.1.0
  */
 export const partition: {
-  <A, B extends A>(refinement: refinement.Refinement<A, B>): (as: Stream<A>) => separated.Separated<Stream<A>, Stream<B>>
+  <A, B extends A>(refinement: refinement.Refinement<A, B>): (
+    as: Stream<A>
+  ) => separated.Separated<Stream<A>, Stream<B>>
   <A>(predicate: predicate.Predicate<A>): <B extends A>(bs: Stream<B>) => separated.Separated<Stream<B>, Stream<B>>
   <A>(predicate: predicate.Predicate<A>): (as: Stream<A>) => separated.Separated<Stream<A>, Stream<A>>
 } = <A>(predicate: predicate.Predicate<A>): ((as: Stream<A>) => separated.Separated<Stream<A>, Stream<A>>) =>
     partitionWithIndex((_, a) => predicate(a))
 
 /**
-* Same as [`partition`](#partition), but passing also the index to the iterating function.
-*
-* @example
-* import { stream } from 'fp-async-generator-streams'
-* import { separated } from "fp-ts";
-* import { pipe } from 'fp-ts/function'
-* import { task, apply } from 'fp-ts'
-*
-* pipe(
-*   [-2, 5, 6, 7],
-*   stream.fromArray,
-*   stream.partitionWithIndex((index, x: number) => index < 3 && x > 0),
-*   separated.bimap(stream.toArray, stream.toArray),
-*   ({ left, right }) => ({ left, right }),
-*   apply.sequenceS(task.task),
-*   task.map(res => assert.deepStrictEqual(res, {
-*     left: [-2, 7],
-*     right: [5, 6],
-*   })),
-* )()
-*
-* @category filtering
-* @since 0.1.0
-*/
+ * Same as [`partition`](#partition), but passing also the index to the iterating function.
+ *
+ * @example
+ * import { stream } from 'fp-async-generator-streams'
+ * import { separated } from "fp-ts";
+ * import { pipe } from 'fp-ts/function'
+ * import { task, apply } from 'fp-ts'
+ *
+ * pipe(
+ *   [-2, 5, 6, 7],
+ *   stream.fromArray,
+ *   stream.partitionWithIndex((index, x: number) => index < 3 && x > 0),
+ *   separated.bimap(stream.toArray, stream.toArray),
+ *   ({ left, right }) => ({ left, right }),
+ *   apply.sequenceS(task.task),
+ *   task.map(res => assert.deepStrictEqual(res, {
+ *     left: [-2, 7],
+ *     right: [5, 6],
+ *   })),
+ * )()
+ *
+ * @category filtering
+ * @since 0.1.0
+ */
 export const partitionWithIndex: {
   <A, B extends A>(refinementWithIndex: filterableWithIndex.RefinementWithIndex<number, A, B>): (
     as: Stream<A>
   ) => separated.Separated<Stream<A>, Stream<B>>
-  <A>(predicateWithIndex: filterableWithIndex.PredicateWithIndex<number, A>): <B extends A>(bs: Stream<B>) => separated.Separated<Stream<B>, Stream<B>>
-  <A>(predicateWithIndex: filterableWithIndex.PredicateWithIndex<number, A>): (as: Stream<A>) => separated.Separated<Stream<A>, Stream<A>>
+  <A>(predicateWithIndex: filterableWithIndex.PredicateWithIndex<number, A>): <B extends A>(
+    bs: Stream<B>
+  ) => separated.Separated<Stream<B>, Stream<B>>
+  <A>(predicateWithIndex: filterableWithIndex.PredicateWithIndex<number, A>): (
+    as: Stream<A>
+  ) => separated.Separated<Stream<A>, Stream<A>>
 } =
   <A>(predicateWithIndex: filterableWithIndex.PredicateWithIndex<number, A>) =>
     (as: Stream<A>): separated.Separated<Stream<A>, Stream<A>> =>
@@ -2031,7 +2066,7 @@ export const partitionWithIndex: {
             either.map(([_, a]) => a)
           )
         ),
-        separate,
+        separate
       )
 
 /**
@@ -2047,7 +2082,7 @@ export const partitionWithIndex: {
  *
  * const upperIfString = <B>(x: B): either.Either<B, string> =>
  *   typeof x === "string" ? either.right(x.toUpperCase()) : either.left(x);
- * 
+ *
  * pipe(
  *   [-2, "hello", 6, 7, "world"],
  *   stream.fromArray,
@@ -2064,9 +2099,9 @@ export const partitionWithIndex: {
  * @category filtering
  * @since 0.1.0
  */
-export const partitionMap: <A, B, C>(f: (a: A) => either.Either<B, C>) => (fa: Stream<A>) => separated.Separated<Stream<B>, Stream<C>> = (
-  f
-) => partitionMapWithIndex((_, a) => f(a))
+export const partitionMap: <A, B, C>(
+  f: (a: A) => either.Either<B, C>
+) => (fa: Stream<A>) => separated.Separated<Stream<B>, Stream<C>> = (f) => partitionMapWithIndex((_, a) => f(a))
 
 /**
  * Same as [`partitionMap`](#partitionMap), but passing also the index to the iterating function.
@@ -2079,7 +2114,7 @@ export const partitionMap: <A, B, C>(f: (a: A) => either.Either<B, C>) => (fa: S
  *
  * const upperIfStringBefore3 = <B>(index: number, x: B): either.Either<B, string> =>
  *   index < 3 && typeof x === "string" ? either.right(x.toUpperCase()) : either.left(x);
- * 
+ *
  * pipe(
  *   [-2, "hello", 6, 7, "world"],
  *   stream.fromArray,
@@ -2102,9 +2137,8 @@ export const partitionMapWithIndex =
       pipe(
         fa,
         mapWithIndex((i, a) => f(i, a)),
-        separate,
+        separate
       )
-
 
 /**
  * Maps a stream with an iterating function that takes the index and the value of
@@ -2120,7 +2154,7 @@ export const partitionMapWithIndex =
  * import { option, task } from "fp-ts";
  *
  * const f = (i: number, s: string) => (i % 2 === 1 ? option.some(s.toUpperCase()) : option.none);
- * 
+ *
  * const test =
  *  pipe(
  *    ["a", "no", "neither", "b"],
@@ -2131,25 +2165,25 @@ export const partitionMapWithIndex =
  *  )
  *
  * test()
- * 
+ *
  * @category filtering
  * @since 0.1.0
  */
 export const filterMapWithIndex =
   <A, B>(f: (i: number, a: A) => option.Option<B>) =>
-    (fa: Stream<A>): Stream<B> => async function* () {
+    (fa: Stream<A>): Stream<B> =>
+      async function* () {
+        let idx = 0
 
-      let idx = 0
+        for await (const item of fa()) {
+          const optionB = f(idx, item)
+          if (option.isSome(optionB)) {
+            yield optionB.value
+          }
 
-      for await (const item of fa()) {
-        const optionB = f(idx, item)
-        if (option.isSome(optionB)) {
-          yield optionB.value
+          idx++
         }
-
-        idx++
       }
-    }
 
 /**
  * Given an iterating function that is a `Predicate` or a `Refinement`,
@@ -2172,7 +2206,7 @@ export const filterMapWithIndex =
  *    )
  *
  * test1()
- * 
+ *
  * const test2 =
  *    pipe(
  *      [-3, 1, -2, 5],
@@ -2208,7 +2242,7 @@ export const filter =
  * import { option, task } from "fp-ts";
  *
  * const f = (s: string) => s.length === 1 ? option.some(s.toUpperCase()) : option.none;
- * 
+ *
  * const test =
  *  pipe(
  *    ["a", "no", "neither", "b"],
@@ -2217,7 +2251,7 @@ export const filter =
  *    stream.toArray,
  *    task.map(res => assert.deepStrictEqual(res, ["A", "B"]))
  *  )
- * 
+ *
  * test()
  *
  * @category filtering
@@ -2235,7 +2269,7 @@ export const filterMap: <A, B>(f: (a: A) => option.Option<B>) => (fa: Stream<A>)
  * import { task } from "fp-ts";
  *
  * const f = (index: number, x: number) => x > 0 && index <= 2;
- * 
+ *
  * const test =
  *  pipe(
  *    [-3, 1, -2, 5],
@@ -2244,14 +2278,16 @@ export const filterMap: <A, B>(f: (a: A) => option.Option<B>) => (fa: Stream<A>)
  *    stream.toArray,
  *    task.map(res => assert.deepStrictEqual(res, [1])),
  *  )
- * 
+ *
  * test()
  *
  * @category filtering
  * @since 0.1.0
  */
 export const filterWithIndex: {
-  <A, B extends A>(refinementWithIndex: filterableWithIndex.RefinementWithIndex<number, A, B>): (as: Stream<A>) => Stream<B>
+  <A, B extends A>(refinementWithIndex: filterableWithIndex.RefinementWithIndex<number, A, B>): (
+    as: Stream<A>
+  ) => Stream<B>
   <A>(predicateWithIndex: filterableWithIndex.PredicateWithIndex<number, A>): <B extends A>(bs: Stream<B>) => Stream<B>
   <A>(predicateWithIndex: filterableWithIndex.PredicateWithIndex<number, A>): (as: Stream<A>) => Stream<A>
 } =
@@ -2259,7 +2295,7 @@ export const filterWithIndex: {
     (as: Stream<A>): Stream<A> =>
       pipe(
         as,
-        filterMapWithIndex((i, a) => predicateWithIndex(i, a) ? option.some(a) : option.none),
+        filterMapWithIndex((i, a) => (predicateWithIndex(i, a) ? option.some(a) : option.none))
       )
 
 /**
@@ -2271,7 +2307,7 @@ export const filterWithIndex: {
  * import { stream } from 'fp-async-generator-streams'
  * import { option, task } from "fp-ts";
  * import { pipe } from 'fp-ts/function'
- * 
+ *
  * const test =
  *  pipe(
  *   stream.fromArray([option.some("a"), option.none, option.some("b")]),
@@ -2279,7 +2315,7 @@ export const filterWithIndex: {
  *   stream.toArray,
  *   task.map(res => assert.deepStrictEqual(res, ["a", "b"]))
  *  )
- * 
+ *
  * test()
  *
  * @category filtering
@@ -2290,12 +2326,12 @@ export const compact: <A>(fa: Stream<option.Option<A>>) => Stream<A> = /*#__PURE
 /**
  * Separate a stream of `Either`s into `Left`s and `Right`s, creating two new streams:
  * one containing all the left values and one containing all the right values.
- * 
+ *
  * @example
  * import { stream } from 'fp-async-generator-streams'
  * import { either, separated, apply, task } from "fp-ts";
  * import { pipe } from 'fp-ts/function'
- * 
+ *
  * const test =
  *  pipe(
  *   stream.fromArray([either.right("r1"), either.left("l1"), either.right("r2")]),
@@ -2308,9 +2344,9 @@ export const compact: <A>(fa: Stream<option.Option<A>>) => Stream<A> = /*#__PURE
  *     right: ["r1", "r2"],
  *   })),
  *  )
- * 
+ *
  * test()
- * 
+ *
  * @category filtering
  * @since 0.1.0
  */
@@ -2318,10 +2354,7 @@ export const separate = <A, B>(fa: Stream<either.Either<A, B>>): separated.Separ
   return pipe(
     broadcast(fa),
     ([left, right]) => ({ left, right }),
-    separated.bimap(
-      filterMap(option.getLeft),
-      filterMap(option.getRight),
-    ),
+    separated.bimap(filterMap(option.getLeft), filterMap(option.getRight))
   )
 }
 
@@ -2330,18 +2363,18 @@ export const separate = <A, B>(fa: Stream<either.Either<A, B>>): separated.Separ
 // -------------------------------------------------------------------------------------
 
 /**
- * 
+ *
  * @example
  * import { stream } from 'fp-async-generator-streams'
  * import { pipe } from 'fp-ts/function'
  * import { task } from "fp-ts";
- * 
+ *
  * pipe(
  *  stream.fromArray([1, 2, 3]),
  *  stream.isEmpty,
  *  task.map(res => assert.deepStrictEqual(res, false))
  * )()
- * 
+ *
  * pipe(
  *  stream.fromArray([]),
  *  stream.isEmpty,
@@ -2351,22 +2384,20 @@ export const separate = <A, B>(fa: Stream<either.Either<A, B>>): separated.Separ
  * @category utils
  * @since 0.1.0
  */
-export const isEmpty: (stream: Stream<unknown>) => task.Task<boolean> =
-  execute(() => false, true)
+export const isEmpty: (stream: Stream<unknown>) => task.Task<boolean> = execute(() => false, true)
 
 /**
  * @category utils
  */
-export const isNonEmpty: (stream: Stream<unknown>) => task.Task<boolean> =
-  flow(
-    isEmpty,
-    task.map(r => !r)
-  )
+export const isNonEmpty: (stream: Stream<unknown>) => task.Task<boolean> = flow(
+  isEmpty,
+  task.map((r) => !r)
+)
 
 /**
  * Prepend an element to the front of a `Stream`, creating a new `Stream
  * Less strict version of [`prepend`](#prepend).
- * 
+ *
  * @example
  * import { stream } from 'fp-async-generator-streams'
  * import { pipe } from 'fp-ts/function'
@@ -2374,7 +2405,7 @@ export const isNonEmpty: (stream: Stream<unknown>) => task.Task<boolean> =
  *
  * pipe(
  *  stream.fromArray([1, 2, 3, 4]),
- *  stream.prependW("zero"),  
+ *  stream.prependW("zero"),
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, ["zero", 1, 2, 3, 4]))
  * )
@@ -2399,7 +2430,7 @@ export const prependW =
  *
  * pipe(
  *  stream.fromArray([1, 2, 3, 4]),
- *  stream.prepend(0),  
+ *  stream.prepend(0),
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, [0, 1, 2, 3, 4]))
  * )
@@ -2418,18 +2449,20 @@ export const prepend: <A>(head: A) => (tail: Stream<A>) => Stream<A> = prependW
  *
  * pipe(
  *  stream.fromArray([0, 1, 2, 3]),
- *  stream.appendW("four"),  
+ *  stream.appendW("four"),
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, [0, 1, 2, 3, "four"]))
  * )
  *
  * @since 2.11.0
  */
-export const appendW = <A, B>(end: B) => (init: Stream<A>): Stream<A | B> =>
-  async function* () {
-    yield* init()
-    yield end
-  }
+export const appendW =
+  <A, B>(end: B) =>
+    (init: Stream<A>): Stream<A | B> =>
+      async function* () {
+        yield* init()
+        yield end
+      }
 
 /**
  * Append an element to the end of a `Stream`, creating a new `Stream`.
@@ -2441,7 +2474,7 @@ export const appendW = <A, B>(end: B) => (init: Stream<A>): Stream<A | B> =>
  *
  * pipe(
  *  stream.fromArray([0, 1, 2, 3]),
- *  stream.append(4),  
+ *  stream.append(4),
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, [0, 1, 2, 3, 4]))
  * )
@@ -2454,9 +2487,11 @@ export const append: <A>(end: A) => (init: Stream<A>) => Stream<A> = appendW
 // non-pipeables
 // -------------------------------------------------------------------------------------
 
-const _mapWithIndex: functorWithIndex.FunctorWithIndex1<URI, number>['mapWithIndex'] = (fa, f) => pipe(fa, mapWithIndex(f))
+const _mapWithIndex: functorWithIndex.FunctorWithIndex1<URI, number>['mapWithIndex'] = (fa, f) =>
+  pipe(fa, mapWithIndex(f))
 const _map: functor.Functor1<URI>['map'] = (fa, f) => pipe(fa, map(f))
-const _filter: filterable.Filterable1<URI>['filter'] = <A>(fa: Stream<A>, predicate: predicate.Predicate<A>) => pipe(fa, filter(predicate))
+const _filter: filterable.Filterable1<URI>['filter'] = <A>(fa: Stream<A>, predicate: predicate.Predicate<A>) =>
+  pipe(fa, filter(predicate))
 const _filterMap: filterable.Filterable1<URI>['filterMap'] = (fa, f) => pipe(fa, filterMap(f))
 const _partition: filterable.Filterable1<URI>['partition'] = <A>(fa: Stream<A>, predicate: predicate.Predicate<A>) =>
   pipe(fa, partition(predicate))
@@ -2465,7 +2500,11 @@ const _partitionWithIndex: filterableWithIndex.FilterableWithIndex1<URI, number>
   fa: Stream<A>,
   predicateWithIndex: (i: number, a: A) => boolean
 ) => pipe(fa, partitionWithIndex(predicateWithIndex))
-const _partitionMapWithIndex: filterableWithIndex.FilterableWithIndex1<URI, number>['partitionMapWithIndex'] = <A, B, C>(
+const _partitionMapWithIndex: filterableWithIndex.FilterableWithIndex1<URI, number>['partitionMapWithIndex'] = <
+  A,
+  B,
+  C
+>(
   fa: Stream<A>,
   f: (i: number, a: A) => either.Either<B, C>
 ) => pipe(fa, partitionMapWithIndex(f))
@@ -2481,7 +2520,7 @@ const _filterWithIndex: filterableWithIndex.FilterableWithIndex1<URI, number>['f
 const _ap: apply.Apply1<URI>['ap'] = (fab, fa) =>
   pipe(
     fab,
-    chain(f => pipe(fa, map(f))),
+    chain((f) => pipe(fa, map(f)))
   )
 const _chain: chain_.Chain1<URI>['chain'] = (ma, f) => pipe(ma, chain(f))
 const _alt: catAlt.Alt1<URI>['alt'] = (fa, that) => pipe(fa, alt(that))
@@ -2506,17 +2545,18 @@ const _alt: catAlt.Alt1<URI>['alt'] = (fa, that) => pipe(fa, alt(that))
  *   stream.toArray,
  *   task.map(res => assert.deepStrictEqual(res, [1, 2, 2, 3])),
  *  )
- * 
+ *
  * test()
  *
  * @category instances
  * @since 0.1.0
  */
 export const getSemigroup = <A = never>(): semigroup.Semigroup<Stream<A>> => ({
-  concat: (first, second) => async function* () {
-    yield* first()
-    yield* second()
-  }
+  concat: (first, second) =>
+    async function* () {
+      yield* first()
+      yield* second()
+    }
 })
 
 /**
@@ -2528,14 +2568,14 @@ export const getSemigroup = <A = never>(): semigroup.Semigroup<Stream<A>> => ({
  * import { stream } from 'fp-async-generator-streams'
  *
  * const M = stream.getMonoid<number>();
- * 
+ *
  * const test =
  *  pipe(
  *   monoid.concatAll(M)([stream.fromArray([1, 2]), stream.fromArray([2, 3])]),
  *   stream.toArray,
  *   task.map(res => assert.deepStrictEqual(res, [1, 2, 2, 3])),
  *  )
- * 
+ *
  * test()
  *
  * @category instances
@@ -2543,7 +2583,7 @@ export const getSemigroup = <A = never>(): semigroup.Semigroup<Stream<A>> => ({
  */
 export const getMonoid = <A = never>(): monoid.Monoid<Stream<A>> => ({
   concat: getSemigroup<A>().concat,
-  empty: zero(),
+  empty: zero()
 })
 
 /**
@@ -2569,14 +2609,14 @@ export const Functor: functor.Functor1<URI> = {
  *   (n: number) => `Triple: ${n * 3}`,
  *   (n: number) => `Square: ${n * n}`,
  * ])
- * 
+ *
  * const test =
  *  pipe(
  *   stream.flap(4)(funs),
  *   stream.toArray,
  *   task.map(res => assert.deepStrictEqual(res, ['Double: 8', 'Triple: 12', 'Square: 16'])),
  *  )
- * 
+ *
  * test()
  *
  * @category mapping
@@ -2635,7 +2675,7 @@ export const Applicative: applicative.Applicative1<URI> = {
   URI,
   map: _map,
   ap: _ap,
-  of,
+  of
 }
 
 /**
@@ -2646,7 +2686,7 @@ export const Chain: chain_.Chain1<URI> = {
   URI,
   map: _map,
   ap: _ap,
-  chain: _chain,
+  chain: _chain
 }
 
 /**
@@ -2665,9 +2705,9 @@ export const Chain: chain_.Chain1<URI> = {
  *    stream.toArray,
  *    task.map(res => assert.deepStrictEqual(res, [1, 1, 2, 2, 3, 3])),
  *  )
- * 
+ *
  * test1()
- * 
+ *
  * const test2 =
  *  pipe(
  *    stream.fromArray([1, 2, 3]),
@@ -2675,14 +2715,14 @@ export const Chain: chain_.Chain1<URI> = {
  *    stream.toArray,
  *    task.map(res => assert.deepStrictEqual(res, [])),
  *  )
- * 
+ *
  * test2()
- * 
+ *
  * @category sequencing
  * @since 0.1.0
  */
 export const chainFirst: <A, B>(f: (a: A) => Stream<B>) => (first: Stream<A>) => Stream<A> =
- /*#__PURE__*/ chain_.chainFirst(Chain)
+  /*#__PURE__*/ chain_.chainFirst(Chain)
 
 /**
  * @category instances
@@ -2693,9 +2733,8 @@ export const Monad: monad.Monad1<URI> = {
   map: _map,
   of,
   ap: _ap,
-  chain: _chain,
+  chain: _chain
 }
-
 
 /**
  * @category instances
@@ -2813,30 +2852,29 @@ export const fromEitherK: <E, A extends ReadonlyArray<unknown>, B>(
 export const FromTask: fromTask_.FromTask1<URI> = {
   URI,
   fromTask,
-  fromIO,
+  fromIO
 }
 
 /**
  * @category lifting
  * @since 2.10.0
  */
-export const fromTaskK: <A extends ReadonlyArray<unknown>, B>(
-  f: (...a: A) => task.Task<B>
-) => (...a: A) => Stream<B> = /*#__PURE__*/ fromTask_.fromTaskK(FromTask)
+export const fromTaskK: <A extends ReadonlyArray<unknown>, B>(f: (...a: A) => task.Task<B>) => (...a: A) => Stream<B> =
+  /*#__PURE__*/ fromTask_.fromTaskK(FromTask)
 
 /**
  * @category sequencing
  * @since 2.10.0
  */
 export const chainTaskK: <A, B>(f: (a: A) => task.Task<B>) => (first: Stream<A>) => Stream<B> =
- /*#__PURE__*/ fromTask_.chainTaskK(FromTask, Chain)
+  /*#__PURE__*/ fromTask_.chainTaskK(FromTask, Chain)
 
 /**
-* @category sequencing
-* @since 2.10.0
-*/
+ * @category sequencing
+ * @since 2.10.0
+ */
 export const chainFirstTaskK: <A, B>(f: (a: A) => task.Task<B>) => (first: Stream<A>) => Stream<A> =
- /*#__PURE__*/ fromTask_.chainFirstTaskK(FromTask, Chain)
+  /*#__PURE__*/ fromTask_.chainFirstTaskK(FromTask, Chain)
 
 // -------------------------------------------------------------------------------------
 // do notation
