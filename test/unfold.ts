@@ -20,4 +20,14 @@ describe('unfold', () => {
 
     await test()
   })
+
+  it('could produce an large stream without stack overflow', async () => {
+    const streamLength = 1_000_000
+    const lastElementTask = pipe(
+      stream.unfold(0, (r) => (r < streamLength ? option.some([r, r + 1]) : option.none)),
+      stream.execute((_, t) => t, -1)
+    )
+    const lastElement = await lastElementTask()
+    assert.equal(lastElement, streamLength - 1)
+  })
 })
