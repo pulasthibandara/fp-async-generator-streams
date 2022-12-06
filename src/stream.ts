@@ -90,15 +90,15 @@ export const zero: <A>() => Stream<A> = () => fromArray([])
 
 export const execute =
   <T, A>(fn: (agg: A, t: T) => A, init: A) =>
-    (stream: Stream<T>) =>
-      async (): Promise<A> => {
-        let agg = init
-        for await (const item of stream()) {
-          agg = fn(agg, item)
-        }
+  (stream: Stream<T>) =>
+  async (): Promise<A> => {
+    let agg = init
+    for await (const item of stream()) {
+      agg = fn(agg, item)
+    }
 
-        return agg
-      }
+    return agg
+  }
 
 /**
  * Convert a `Stream` to an `Array`
@@ -174,12 +174,12 @@ export const length = <T>(stream: Stream<T>) => execute<T, number>((agg) => agg 
  */
 export const lookup =
   (idx: number) =>
-    <A>(as: Stream<A>): task.Task<option.Option<A>> =>
-      pipe(
-        as,
-        filterWithIndex((i) => i === idx),
-        head
-      )
+  <A>(as: Stream<A>): task.Task<option.Option<A>> =>
+    pipe(
+      as,
+      filterWithIndex((i) => i === idx),
+      head
+    )
 
 /**
  * Get the last element in an stream, or `None` if the stream is empty
@@ -489,13 +489,13 @@ export const findLastIndex = <A>(
  */
 export const elem =
   <A>(E: eq.Eq<A>) =>
-    (a: A) =>
-      (as: Stream<A>): task.Task<boolean> =>
-        pipe(
-          as,
-          findFirst((x) => E.equals(x, a)),
-          task.map(option.isSome)
-        )
+  (a: A) =>
+  (as: Stream<A>): task.Task<boolean> =>
+    pipe(
+      as,
+      findFirst((x) => E.equals(x, a)),
+      task.map(option.isSome)
+    )
 
 /**
  * Creates a new `Stream` removing duplicate elements, keeping the first occurrence of an element,
@@ -520,22 +520,22 @@ export const elem =
  */
 export const uniq =
   <A>(E: eq.Eq<A>) =>
-    (as: Stream<A>): Stream<A> =>
-      async function* () {
-        let seen: Array<A> = []
+  (as: Stream<A>): Stream<A> =>
+    async function* () {
+      let seen: Array<A> = []
 
-        for await (const a of as()) {
-          const isSeen = pipe(
-            seen,
-            array.exists((x) => E.equals(x, a))
-          )
+      for await (const a of as()) {
+        const isSeen = pipe(
+          seen,
+          array.exists((x) => E.equals(x, a))
+        )
 
-          if (!isSeen) {
-            seen = [...seen, a]
-            yield a
-          }
+        if (!isSeen) {
+          seen = [...seen, a]
+          yield a
         }
       }
+    }
 
 /**
  * Broadcast the stream to another stream without consuming multiple times
@@ -706,19 +706,19 @@ export const init = <A>(as: Stream<A>): Stream<A> =>
  */
 export const take =
   (n: number) =>
-    <T>(gen: Stream<T>): Stream<T> =>
-      async function* () {
-        let count = 0
+  <T>(gen: Stream<T>): Stream<T> =>
+    async function* () {
+      let count = 0
 
-        for await (const item of gen()) {
-          if (count >= n) {
-            break
-          }
-
-          count++
-          yield item
+      for await (const item of gen()) {
+        if (count >= n) {
+          break
         }
+
+        count++
+        yield item
       }
+    }
 
 /**
  * Calculate the longest initial subarray for which all element satisfy the specified predicate, creating a new array
@@ -798,18 +798,18 @@ export function takeWhile<A>(predicate: predicate.Predicate<A>): (as: Stream<A>)
  */
 export const drop =
   (n: number) =>
-    <A>(as: Stream<A>): Stream<A> =>
-      async function* () {
-        let count = 0
+  <A>(as: Stream<A>): Stream<A> =>
+    async function* () {
+      let count = 0
 
-        for await (const a of as()) {
-          if (count >= n) {
-            yield a
-          }
-
-          count++
+      for await (const a of as()) {
+        if (count >= n) {
+          yield a
         }
+
+        count++
       }
+    }
 
 /**
  * Creates a new `Stream` which is a copy of the input dropping the longest initial substream for
@@ -973,22 +973,22 @@ export function spanLeft<A>(predicate: predicate.Predicate<A>): (as: Stream<A>) 
  */
 export const chunksOf =
   (chunkSize: number) =>
-    <T>(gen: Stream<T>): Stream<Array<T>> =>
-      async function* () {
-        let _chunk: Array<T> = []
-        for await (const item of gen()) {
-          if (_chunk.length < chunkSize) {
-            _chunk.push(item)
-          } else {
-            yield _chunk
-            _chunk = [item]
-          }
-        }
-
-        if (_chunk.length) {
+  <T>(gen: Stream<T>): Stream<Array<T>> =>
+    async function* () {
+      let _chunk: Array<T> = []
+      for await (const item of gen()) {
+        if (_chunk.length < chunkSize) {
+          _chunk.push(item)
+        } else {
           yield _chunk
+          _chunk = [item]
         }
       }
+
+      if (_chunk.length) {
+        yield _chunk
+      }
+    }
 
 /**
  * Same as [`map`](#map), but the iterating function takes both the index and the value
@@ -1015,15 +1015,15 @@ export const chunksOf =
  */
 export const mapWithIndex =
   <A, B>(fn: (idx: number, a: A) => B) =>
-    (gen: Stream<A>): Stream<B> =>
-      async function* () {
-        let idx = 0
+  (gen: Stream<A>): Stream<B> =>
+    async function* () {
+      let idx = 0
 
-        for await (const item of gen()) {
-          yield fn(idx, item)
-          idx++
-        }
+      for await (const item of gen()) {
+        yield fn(idx, item)
+        idx++
       }
+    }
 
 /**
  * `map` can be used to turn functions `(a: A) => B` into functions `(fa: Stream<A>) => Stream<B>`.
@@ -1051,12 +1051,12 @@ export const mapWithIndex =
  */
 export const map =
   <A, B>(fn: (a: A) => B) =>
-    (gen: Stream<A>): Stream<B> =>
-      async function* () {
-        for await (const item of gen()) {
-          yield fn(item)
-        }
+  (gen: Stream<A>): Stream<B> =>
+    async function* () {
+      for await (const item of gen()) {
+        yield fn(item)
       }
+    }
 
 /**
  * Same as [`chain`](#chain), but passing also the index to the iterating function.
@@ -1082,17 +1082,17 @@ export const map =
  */
 export const chainWithIndex =
   <A, B>(f: (i: number, a: A) => Stream<B>) =>
-    (as: Stream<A>): Stream<B> =>
-      async function* () {
-        let idx = 0
-        for await (const item of as()) {
-          for await (const b of f(idx, item)()) {
-            yield b
-          }
-
-          idx++
+  (as: Stream<A>): Stream<B> =>
+    async function* () {
+      let idx = 0
+      for await (const item of as()) {
+        for await (const b of f(idx, item)()) {
+          yield b
         }
+
+        idx++
       }
+    }
 
 /**
  * A useful recursion pattern for processing a `ReadonlyNonEmptyArray` to produce a new `ReadonlyNonEmptyArray`, often used for "chopping" up the input
@@ -1142,28 +1142,28 @@ export const chainWithIndex =
  */
 export const chop =
   <A, B>(f: (as: Stream<A>) => task.Task<readonly [B, Stream<A>]>) =>
-    (as: Stream<A>): Stream<B> =>
-      async function* () {
-        const [b, rest] = await f(as)()
+  (as: Stream<A>): Stream<B> =>
+    async function* () {
+      const [b, rest] = await f(as)()
+      yield b
+
+      let next: Stream<A> = rest
+
+      while (true) {
+        const iterator = next()[Symbol.asyncIterator]()
+        const { value, done } = await iterator.next()
+
+        if (done) {
+          return
+        }
+
+        const [b, rest] = await f(pipe(() => iterator, prepend(value)))()
+
         yield b
 
-        let next: Stream<A> = rest
-
-        while (true) {
-          const iterator = next()[Symbol.asyncIterator]()
-          const { value, done } = await iterator.next()
-
-          if (done) {
-            return
-          }
-
-          const [b, rest] = await f(pipe(() => iterator, prepend(value)))()
-
-          yield b
-
-          next = rest
-        }
+        next = rest
       }
+    }
 
 /**
  * Splits a `Stream` into two pieces, the first piece has max `n` elements.
@@ -1265,10 +1265,10 @@ export const flatten: <A>(mma: Stream<Stream<A>>) => Stream<A> = /*#__PURE__*/ c
  */
 export const altW =
   <B>(that: Lazy<Stream<B>>) =>
-    <A>(fa: Stream<A>): Stream<A | B> => {
-      const S = getSemigroup<A | B>()
-      return S.concat(fa, that())
-    }
+  <A>(fa: Stream<A>): Stream<A | B> => {
+    const S = getSemigroup<A | B>()
+    return S.concat(fa, that())
+  }
 
 /**
  * Identifies an associative operation on a type constructor. It is similar to `Semigroup`, except that it applies to
@@ -1445,18 +1445,18 @@ export const replicate = <A>(n: number, a: A): Stream<A> => makeBy(n, () => a)
  */
 export const insertAt =
   <A>(i: number, a: A) =>
-    (as: Stream<A>): Stream<A> =>
-      async function* () {
-        let j = 0
-        for await (const item of as()) {
-          j++
-          yield item
+  (as: Stream<A>): Stream<A> =>
+    async function* () {
+      let j = 0
+      for await (const item of as()) {
+        j++
+        yield item
 
-          if (j === i) {
-            yield a
-          }
+        if (j === i) {
+          yield a
         }
       }
+    }
 
 /**
  * Apply a function to the element at the specified index, creating a new array,
@@ -1487,14 +1487,14 @@ export const insertAt =
  */
 export const modifyAt =
   <A>(i: number, f: (a: A) => A) =>
-    (as: Stream<A>): Stream<A> =>
-      async function* () {
-        let j = 0
-        for await (const item of as()) {
-          yield j === i ? f(item) : item
-          j++
-        }
+  (as: Stream<A>): Stream<A> =>
+    async function* () {
+      let j = 0
+      for await (const item of as()) {
+        yield j === i ? f(item) : item
+        j++
       }
+    }
 
 /**
  * Change the element at the specified index, creating a new stream.
@@ -1679,23 +1679,23 @@ export const intersperse = <A>(middle: A): ((as: Stream<A>) => Stream<A>) => flo
  */
 export const rotate =
   (n: number) =>
-    <A>(as: Stream<A>): Stream<A> =>
-      async function* () {
-        let idx = 0
-        const buffer: Array<A> = []
+  <A>(as: Stream<A>): Stream<A> =>
+    async function* () {
+      let idx = 0
+      const buffer: Array<A> = []
 
-        for await (const a of as()) {
-          if (idx < n) {
-            buffer.push(a)
-          } else {
-            yield a
-          }
-
-          idx++
+      for await (const a of as()) {
+        if (idx < n) {
+          buffer.push(a)
+        } else {
+          yield a
         }
 
-        yield* buffer
+        idx++
       }
+
+      yield* buffer
+    }
 
 // -------------------------------------------------------------------------------------
 // constructors
@@ -1724,19 +1724,19 @@ export const rotate =
  */
 export const fromRec =
   <A>(fn: (a: option.Option<A>) => option.Option<A>) =>
-    (init: option.Option<A>): Stream<A> =>
-      async function* () {
-        let next = init
+  (init: option.Option<A>): Stream<A> =>
+    async function* () {
+      let next = init
 
-        // Using an iteration here to support stack safety
-        do {
-          if (option.isSome(next)) {
-            yield next.value
-          }
+      // Using an iteration here to support stack safety
+      do {
+        if (option.isSome(next)) {
+          yield next.value
+        }
 
-          next = fn(next)
-        } while (option.isSome(next))
-      }
+        next = fn(next)
+      } while (option.isSome(next))
+    }
 
 /**
  * Create a stream of single element from the value of a  Task.
@@ -1854,8 +1854,8 @@ export const fromArray = <A>(array: ReadonlyArray<A>): Stream<A> =>
  */
 export const fromArrayK =
   <A, B>(array: (a: A) => Array<B>) =>
-    (a: A): Stream<B> =>
-      fromArray(array(a))
+  (a: A): Stream<B> =>
+    fromArray(array(a))
 
 /**
  * Create a stream with one element, if the element satisfies the predicate, otherwise
@@ -2017,7 +2017,7 @@ export const partition: {
   <A>(predicate: predicate.Predicate<A>): <B extends A>(bs: Stream<B>) => separated.Separated<Stream<B>, Stream<B>>
   <A>(predicate: predicate.Predicate<A>): (as: Stream<A>) => separated.Separated<Stream<A>, Stream<A>>
 } = <A>(predicate: predicate.Predicate<A>): ((as: Stream<A>) => separated.Separated<Stream<A>, Stream<A>>) =>
-    partitionWithIndex((_, a) => predicate(a))
+  partitionWithIndex((_, a) => predicate(a))
 
 /**
  * Same as [`partition`](#partition), but passing also the index to the iterating function.
@@ -2056,18 +2056,18 @@ export const partitionWithIndex: {
   ) => separated.Separated<Stream<A>, Stream<A>>
 } =
   <A>(predicateWithIndex: filterableWithIndex.PredicateWithIndex<number, A>) =>
-    (as: Stream<A>): separated.Separated<Stream<A>, Stream<A>> =>
-      pipe(
-        as,
-        mapWithIndex(
-          flow(
-            toTuple,
-            either.fromPredicate(tupled(predicateWithIndex), ([_, a]) => a),
-            either.map(([_, a]) => a)
-          )
-        ),
-        separate
-      )
+  (as: Stream<A>): separated.Separated<Stream<A>, Stream<A>> =>
+    pipe(
+      as,
+      mapWithIndex(
+        flow(
+          toTuple,
+          either.fromPredicate(tupled(predicateWithIndex), ([_, a]) => a),
+          either.map(([_, a]) => a)
+        )
+      ),
+      separate
+    )
 
 /**
  * Given an iterating function that returns an `Either`,
@@ -2133,12 +2133,12 @@ export const partitionMap: <A, B, C>(
  */
 export const partitionMapWithIndex =
   <A, B, C>(f: (i: number, a: A) => either.Either<B, C>) =>
-    (fa: Stream<A>): separated.Separated<Stream<B>, Stream<C>> =>
-      pipe(
-        fa,
-        mapWithIndex((i, a) => f(i, a)),
-        separate
-      )
+  (fa: Stream<A>): separated.Separated<Stream<B>, Stream<C>> =>
+    pipe(
+      fa,
+      mapWithIndex((i, a) => f(i, a)),
+      separate
+    )
 
 /**
  * Maps a stream with an iterating function that takes the index and the value of
@@ -2171,19 +2171,19 @@ export const partitionMapWithIndex =
  */
 export const filterMapWithIndex =
   <A, B>(f: (i: number, a: A) => option.Option<B>) =>
-    (fa: Stream<A>): Stream<B> =>
-      async function* () {
-        let idx = 0
+  (fa: Stream<A>): Stream<B> =>
+    async function* () {
+      let idx = 0
 
-        for await (const item of fa()) {
-          const optionB = f(idx, item)
-          if (option.isSome(optionB)) {
-            yield optionB.value
-          }
-
-          idx++
+      for await (const item of fa()) {
+        const optionB = f(idx, item)
+        if (option.isSome(optionB)) {
+          yield optionB.value
         }
+
+        idx++
       }
+    }
 
 /**
  * Given an iterating function that is a `Predicate` or a `Refinement`,
@@ -2223,14 +2223,14 @@ export const filterMapWithIndex =
  */
 export const filter =
   <A>(fn: predicate.Predicate<A>) =>
-    (s: Stream<A>): Stream<A> =>
-      async function* () {
-        for await (const item of s()) {
-          if (fn(item)) {
-            yield item
-          }
+  (s: Stream<A>): Stream<A> =>
+    async function* () {
+      for await (const item of s()) {
+        if (fn(item)) {
+          yield item
         }
       }
+    }
 
 /**
  * Maps a stream with an iterating function that returns an `Option`
@@ -2292,11 +2292,11 @@ export const filterWithIndex: {
   <A>(predicateWithIndex: filterableWithIndex.PredicateWithIndex<number, A>): (as: Stream<A>) => Stream<A>
 } =
   <A>(predicateWithIndex: filterableWithIndex.PredicateWithIndex<number, A>) =>
-    (as: Stream<A>): Stream<A> =>
-      pipe(
-        as,
-        filterMapWithIndex((i, a) => (predicateWithIndex(i, a) ? option.some(a) : option.none))
-      )
+  (as: Stream<A>): Stream<A> =>
+    pipe(
+      as,
+      filterMapWithIndex((i, a) => (predicateWithIndex(i, a) ? option.some(a) : option.none))
+    )
 
 /**
  * Compact a stream of `Option`s discarding the `None` values and
@@ -2414,11 +2414,11 @@ export const isNonEmpty: (stream: Stream<unknown>) => task.Task<boolean> = flow(
  */
 export const prependW =
   <B>(head: B) =>
-    <A>(tail: Stream<A>): Stream<A | B> =>
-      async function* () {
-        yield head
-        yield* tail()
-      }
+  <A>(tail: Stream<A>): Stream<A | B> =>
+    async function* () {
+      yield head
+      yield* tail()
+    }
 
 /**
  * Prepend an element to the front of a `Stream`, creating a new `Stream`.
@@ -2458,11 +2458,11 @@ export const prepend: <A>(head: A) => (tail: Stream<A>) => Stream<A> = prependW
  */
 export const appendW =
   <A, B>(end: B) =>
-    (init: Stream<A>): Stream<A | B> =>
-      async function* () {
-        yield* init()
-        yield end
-      }
+  (init: Stream<A>): Stream<A | B> =>
+    async function* () {
+      yield* init()
+      yield end
+    }
 
 /**
  * Append an element to the end of a `Stream`, creating a new `Stream`.

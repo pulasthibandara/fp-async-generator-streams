@@ -1,12 +1,12 @@
-import { flow, pipe } from 'fp-ts/lib/function'
-import * as stream from './Stream'
+import { pipe } from 'fp-ts/function'
+import * as stream from './stream'
 import { expect } from 'chai'
 import * as fc from 'fast-check'
 import { option } from 'fp-ts'
 
 const testStreamOutput =
   <T>(subject: stream.Stream<T>) =>
-  async (expected: T[]) => {
+  async (expected: Array<T>) => {
     const resultTask = pipe(subject, stream.toArray)
 
     expect(await resultTask()).to.deep.equal(expected)

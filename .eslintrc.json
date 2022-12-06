@@ -2,7 +2,7 @@
   "parserOptions": {
     "project": "./tsconfig.json"
   },
-  "plugins": ["deprecation", "fp-ts"],
+  "plugins": ["deprecation", "fp-ts", "prettier"],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
