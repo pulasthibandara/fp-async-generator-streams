@@ -7,5 +7,5 @@ search_enabled: true
 aux_links:
   'fp-ts on GitHub':
     - 'https://github.com/gcanti/fp-ts'
-  'fp-async-generator-streams on GitHub':
+  'GitHub':
     - 'https://github.com/pulasthibandara/fp-async-generator-streams'
