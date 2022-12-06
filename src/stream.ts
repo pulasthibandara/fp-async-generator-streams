@@ -105,7 +105,7 @@ export const execute =
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { task, option } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * pipe(
@@ -129,7 +129,7 @@ export const toArray = <T>(stream: Stream<T>) => execute<T, Array<T>>((agg, c) =
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { task, option } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * pipe(
@@ -388,16 +388,11 @@ export const findLastMapWithIndex = <A, B>(
  * import { task, option } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
- * type X = {
- *   readonly a: number
- *   readonly b: number
- * }
- *
  * pipe(
  *  stream.fromArray([{ a: 1, b: 1 }, { a: 1, b: 2 }]),
  *  stream.findLast((x) => x.a === 1),
  *  task.map(res => assert.deepStrictEqual(option.some({ a: 1, b: 2 }), res))
- * )
+ * )()
  *
  * @since 0.1.0
  */
@@ -583,7 +578,7 @@ const _bufferBroadcast = <A>(as: Stream<A>): Stream<A> => {
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { task, number } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * const [s1, s2] = pipe(
@@ -620,7 +615,7 @@ export const broadcast = <A>(as: Stream<A>): [Stream<A>, Stream<A>] => {
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { task, option } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * pipe(
@@ -660,7 +655,7 @@ export const init = <A>(as: Stream<A>): Stream<A> =>
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { task, option } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * const stream1To5 = stream.fromRange(1, 6)
@@ -716,7 +711,7 @@ export const take =
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { task, option } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * pipe(
@@ -752,7 +747,7 @@ export function takeWhile<A>(predicate: predicate.Predicate<A>): (as: Stream<A>)
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { task, option } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * const stream1To3 = stream.fromRange(1, 4)
@@ -808,7 +803,7 @@ export const drop =
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { task, option } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * pipe(
@@ -857,7 +852,7 @@ export function dropWhileIndex<A>(
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { task, option } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * pipe(
@@ -894,7 +889,7 @@ export type Spanned<I, R> = {
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { task, option, apply } from 'fp-ts'
+ * import { task, apply } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * const isOdd = (n: number) => n % 2 === 1;
@@ -1147,7 +1142,7 @@ export const splitAt = (n: number): (<A>(as: Stream<A>) => [Stream<A>, Stream<A>
  * This is the `chain` component of the stream `Monad`.
  *
  * @example
- * import { task, array } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { pipe } from 'fp-ts/function'
  * import { stream } from 'fp-async-generator-streams'
  *
@@ -1299,7 +1294,7 @@ export const unfold = <A, B>(b: B, f: (b: B) => option.Option<readonly [A, B]>):
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { option, task } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * const double = (i: number): number => i * 2
@@ -1340,7 +1335,7 @@ export const makeBy = <A>(n: number, f: (i: number) => A): Stream<A> =>
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { option, task } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  *
@@ -1374,7 +1369,7 @@ export const replicate = <A>(n: number, a: A): Stream<A> => makeBy(n, () => a)
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { option, task } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * pipe(
@@ -1414,7 +1409,7 @@ export const insertAt =
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { option, task } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * const double = (x: number): number => x * 2
@@ -1452,7 +1447,7 @@ export const modifyAt =
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { option, task } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * pipe(
@@ -1479,7 +1474,7 @@ export const updateAt = <A>(i: number, a: A): ((as: Stream<A>) => Stream<A>) => 
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { option, task } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * pipe(
@@ -1516,7 +1511,7 @@ export const zipWith = <A, B, C>(fa: Stream<A>, fb: Stream<B>, f: (a: A, b: B) =
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { option, task } from 'fp-ts'
+ * import { task } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * pipe(
@@ -1548,7 +1543,7 @@ export function zip<A, B>(
  *
  * @example
  * import { pipe } from 'fp-ts/function'
- * import { option, task, apply } from 'fp-ts'
+ * import { task, apply } from 'fp-ts'
  * import { stream } from 'fp-async-generator-streams'
  *
  * pipe(
@@ -1585,7 +1580,7 @@ export const unzip = <A, B>(as: Stream<readonly [A, B]>): readonly [Stream<A>, S
  *  stream.prependAll(9)(stream.fromArray([1, 2, 3, 4])),
  *  stream.toArray,
  *  task.map(array => assert.deepStrictEqual(array, [9, 1, 9, 2, 9, 3, 9, 4]))
- * )
+ * )()
  *
  * @since 2.10.0
  */
@@ -1604,7 +1599,7 @@ export const prependAll = <A>(middle: A): ((as: Stream<A>) => Stream<A>) => chai
  *  stream.intersperse(9)(stream.fromArray([1, 2, 3, 4])),
  *  stream.toArray,
  *  task.map(array => assert.deepStrictEqual(array, [1, 9, 2, 9, 3, 9, 4]))
- * )
+ * )()
  *
  * @since 0.1.0
  */
@@ -1620,14 +1615,14 @@ export const intersperse = <A>(middle: A): ((as: Stream<A>) => Stream<A>) => flo
  * import { stream } from 'fp-async-generator-streams'
  *
  * pipe(
- *  stream.rotate(2)(stream.fromArray([1, 2, 3, 4, 5])),
+ *  stream.rotateLeft(2)(stream.fromArray([1, 2, 3, 4, 5])),
  *  stream.toArray,
- *  task.map(array => assert.deepStrictEqual(array, [4, 5, 1, 2, 3]))
- * )
+ *  task.map(array => assert.deepStrictEqual(array, [3, 4, 5, 1, 2]))
+ * )()
  *
  * @since 0.1.0
  */
-export const rotate =
+export const rotateLeft =
   (n: number) =>
   <A>(as: Stream<A>): Stream<A> =>
     async function* () {
@@ -2358,7 +2353,7 @@ export const isNonEmpty: (stream: Stream<unknown>) => task.Task<boolean> = flow(
  *  stream.prependW("zero"),
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, ["zero", 1, 2, 3, 4]))
- * )
+ * )()
  *
  * @category utils
  */
@@ -2383,7 +2378,7 @@ export const prependW =
  *  stream.prepend(0),
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, [0, 1, 2, 3, 4]))
- * )
+ * )()
  *
  * @since 2.10.0
  */
@@ -2402,7 +2397,7 @@ export const prepend: <A>(head: A) => (tail: Stream<A>) => Stream<A> = prependW
  *  stream.appendW("four"),
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, [0, 1, 2, 3, "four"]))
- * )
+ * )()
  *
  * @since 2.11.0
  */
@@ -2427,7 +2422,7 @@ export const appendW =
  *  stream.append(4),
  *  stream.toArray,
  *  task.map(res => assert.deepStrictEqual(res, [0, 1, 2, 3, 4]))
- * )
+ * )()
  *
  * @since 2.10.0
  */
