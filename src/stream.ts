@@ -538,6 +538,44 @@ export const uniq =
     }
 
 /**
+ * Creates s stream by consuming the original stream, which could
+ * be multiple times without re-executing the original stream.
+ *
+ * If one consumer is slower than the other, the slower consumers will
+ * buffer.
+ *
+ * @internal
+ *
+ * @since 0.1.0
+ */
+const _bufferBroadcast = <A>(as: Stream<A>): Stream<A> => {
+  let streamCount = 0
+  const buffers: Array<Array<A>> = []
+
+  const iterator = as()[Symbol.asyncIterator]()
+
+  return async function* () {
+    const id = streamCount++
+    buffers[id] = []
+
+    while (true) {
+      const { value, done } = await iterator.next()
+
+      const temp = buffers[id]
+      buffers[id] = []
+      buffers.forEach((b, idx) => idx !== id && b.push(...(value === undefined ? [] : [value])))
+
+      yield* [...temp, ...(value === undefined ? [] : [value])]
+
+      if (done && buffers[id].length === 0) {
+        await Promise.resolve()
+        return
+      }
+    }
+  }
+}
+
+/**
  * Broadcast the stream to another stream without consuming multiple times
  * from the source.
  *
@@ -572,55 +610,8 @@ export const uniq =
  * @since 0.1.0
  */
 export const broadcast = <A>(as: Stream<A>): [Stream<A>, Stream<A>] => {
-  const iterator = as()[Symbol.asyncIterator]()
-
-  let bufferA: Array<A> = []
-  let bufferB: Array<A> = []
-  let aConsumed = false
-  let bConsumed = false
-
-  return [
-    async function* () {
-      if (aConsumed) {
-        throw new Error('Broadcasted stream already consumed')
-      }
-
-      aConsumed = true
-
-      while (true) {
-        const { value, done } = await iterator.next()
-
-        const temp = bufferA
-        bufferA = []
-        bufferB.push(...(value === undefined ? [] : [value]))
-        yield* [...temp, ...(value === undefined ? [] : [value])]
-
-        if (done && !bufferA.length) {
-          return
-        }
-      }
-    },
-    async function* () {
-      if (bConsumed) {
-        throw new Error('Broadcasted stream already consumed')
-      }
-
-      bConsumed = true
-
-      while (true) {
-        const { value, done } = await iterator.next()
-
-        const temp = bufferB
-        bufferB = []
-        bufferA.push(...(value === undefined ? [] : [value]))
-        yield* [...temp, ...(value === undefined ? [] : [value])]
-
-        if (done && !bufferB.length) {
-          return
-        }
-      }
-    }
-  ]
+  const broadcaster = _bufferBroadcast(as)
+  return [broadcaster, broadcaster]
 }
 
 /**
@@ -1059,6 +1050,36 @@ export const map =
     }
 
 /**
+ * Same as `reduce` but it carries over the intermediate steps
+ *
+ * @example
+ * import { pipe } from 'fp-ts/function'
+ * import { task } from 'fp-ts'
+ * import { stream } from 'fp-async-generator-streams'
+ *
+ * pipe(
+ *  stream.fromArray([1, 2, 3]),
+ *  stream.scan(10, (b, a: number) => b - a),
+ *  stream.toArray,
+ *  task.map(res => assert.deepStrictEqual(res, [10, 9, 7, 4]))
+ * )()
+ *
+ * @since 2.0.0
+ */
+export const scan =
+  <A, B>(b: B, f: (b: B, a: A) => B) =>
+  (as: Stream<A>): Stream<B> =>
+    async function* () {
+      let acc = b
+
+      yield acc
+      for await (const a of as()) {
+        acc = f(acc, a)
+        yield acc
+      }
+    }
+
+/**
  * Same as [`chain`](#chain), but passing also the index to the iterating function.
  *
  * @example
@@ -1091,77 +1112,6 @@ export const chainWithIndex =
         }
 
         idx++
-      }
-    }
-
-/**
- * A useful recursion pattern for processing a `ReadonlyNonEmptyArray` to produce a new `ReadonlyNonEmptyArray`, often used for "chopping" up the input
- * `ReadonlyNonEmptyArray`. Typically `chop` is called with some function that will consume an initial prefix of the `ReadonlyNonEmptyArray` and produce a
- * value and the tail of the `ReadonlyNonEmptyArray`.
- *
- * @example
- * import { stream } from 'fp-async-generator-streams'
- * import { pipe } from 'fp-ts/function'
- * import { task, number, eq } from 'fp-ts'
- *
- * const group = <A>(S: eq.Eq<A>): ((as: stream.Stream<A>) => stream.Stream<Array<A>>) => {
- *   return stream.chop(as => async () => {
- *     const [s1, s2] = pipe(
- *       as,
- *       stream.broadcast,
- *     )
- *
- *     const head = await pipe(
- *       s1,
- *       stream.take(1),
- *       stream.toArray,
- *     )()
- *
- *     const { init, rest } = pipe(
- *       s2,
- *       stream.spanLeft((a: A) => S.equals(a, head[0])),
- *     )
- *
- *     const chunked = await stream.toArray(init)()
- *     return [chunked, rest]
- *   })
- * }
- *
- * const groupedStream = pipe(
- *  stream.fromArray([1, 1, 2, 3, 3, 4]),
- *  group(number.Eq),
- * )
- *
- * pipe(
- *  groupedStream,
- *  stream.toArray,
- *  task.map(chopped => assert.deepStrictEqual(chopped, [[1, 1], [2], [3, 3], [4]]))
- * )()
- *
- * @since 2.10.0
- */
-export const chop =
-  <A, B>(f: (as: Stream<A>) => task.Task<readonly [B, Stream<A>]>) =>
-  (as: Stream<A>): Stream<B> =>
-    async function* () {
-      const [b, rest] = await f(as)()
-      yield b
-
-      let next: Stream<A> = rest
-
-      while (true) {
-        const iterator = next()[Symbol.asyncIterator]()
-        const { value, done } = await iterator.next()
-
-        if (done) {
-          return
-        }
-
-        const [b, rest] = await f(pipe(() => iterator, prepend(value)))()
-
-        yield b
-
-        next = rest
       }
     }
 
