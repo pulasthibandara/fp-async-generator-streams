@@ -1,7 +1,4 @@
----
-title: Home
-nav_order: 1
----
+# Lazy Streams Implementation using Async Generators and fp-ts
 
 - **Lazy** - Stream and source functions are only executed when evaluated.
 - **[fp-ts](https://github.com/gcanti/fp-ts)** - Is a library for typed functional programming in TypeScript.
